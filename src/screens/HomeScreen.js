@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
-import { getRandomVerse } from '../constants/levels';
+import { getRandomVerse, LEVELS } from '../constants/levels';
 import { getProgress, getAllStats } from '../utils/storage';
 
 const { width, height } = Dimensions.get('window');
@@ -49,7 +49,31 @@ export const HomeScreen = ({ navigation }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const loadProgress = async () => {
+  const handleContinueQuest = async () => {
+  try {
+    const progress = await getProgress();
+    const completed = Object.values(progress).filter(Boolean).length;
+    
+    if (completed === 0) {
+      // No levels completed, go to first level
+      navigation.navigate('Game', { level: LEVELS[0] });
+    } else {
+      // Find the next incomplete level
+      const nextLevelId = completed + 1;
+      if (nextLevelId <= LEVELS.length) {
+        navigation.navigate('Game', { level: LEVELS[nextLevelId - 1] });
+      } else {
+        // All levels completed, go to level selection
+        navigation.navigate('Levels');
+      }
+    }
+  } catch (error) {
+    console.error('Error loading progress for continue quest:', error);
+    navigation.navigate('Levels');
+  }
+};
+
+const loadProgress = async () => {
     const progress = await getProgress();
     const completed = Object.values(progress).filter(Boolean).length;
     setCompletedCount(completed);
@@ -231,7 +255,7 @@ export const HomeScreen = ({ navigation }) => {
           <Animated.View style={[styles.buttonContainer, { transform: [{ scale: button1Scale }] }]}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => navigation.navigate('Levels')}
+              onPress={handleContinueQuest}
               activeOpacity={0.8}
             >
               <LinearGradient
