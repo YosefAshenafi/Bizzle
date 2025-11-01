@@ -257,6 +257,7 @@ export const GameScreen = ({ route, navigation }) => {
         levelTitle={level.title}
         movesUsed={moveCount}
         maxMoves={level.moves}
+        timeTaken={timer}
       />
     </LinearGradient>
   );

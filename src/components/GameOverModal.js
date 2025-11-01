@@ -22,7 +22,8 @@ export const GameOverModal = ({
   onBackToLevels, 
   levelTitle,
   movesUsed,
-  maxMoves 
+  maxMoves,
+  timeTaken = 0
 }) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -164,6 +165,12 @@ export const GameOverModal = ({
     });
   };
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   if (!visible) return null;
 
   return (
@@ -196,20 +203,17 @@ export const GameOverModal = ({
                   {/* Stats */}
                   <View style={styles.statsContainer}>
                     <View style={styles.statBox}>
-                      <Text style={styles.statLabel}>Moves Used</Text>
-                      <Text style={styles.statValue}>{movesUsed}/{maxMoves}</Text>
+                      <Text style={styles.statLabel}>⏱️ Time</Text>
+                      <Text style={styles.statValue}>{formatTime(timeTaken)}</Text>
                     </View>
                     <View style={styles.statBox}>
-                      <Text style={styles.statLabel}>Status</Text>
-                      <Text style={styles.statValue}>❌ Incomplete</Text>
+                      <Text style={styles.statLabel}>🎯 Moves</Text>
+                      <Text style={styles.statValue}>{movesUsed}/{maxMoves}</Text>
                     </View>
                   </View>
 
                   {/* Message */}
                   <View style={styles.messageContainer}>
-                    <Text style={styles.messageText}>
-                      🙏 The path was challenging, but wisdom comes through perseverance!
-                    </Text>
                     <Text style={styles.challengeText}>
                       Answer a biblical question to earn another chance!
                     </Text>
@@ -222,7 +226,7 @@ export const GameOverModal = ({
                       onPress={handleRetryWithQuiz}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.retryButtonText}>📖 Answer to Retry</Text>
+                      <Text style={styles.retryButtonText}>Answer to Retry</Text>
                     </TouchableOpacity>
                     
                     <TouchableOpacity
@@ -370,95 +374,131 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
+    marginTop: 40,
     marginBottom: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: COLORS.error,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    textShadowColor: COLORS.black,
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.gold,
-    textAlign: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  statBox: {
-    backgroundColor: COLORS.darker + '40',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.gold + '30',
-    minWidth: 120,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.light,
-    marginBottom: 4,
-  },
-  statValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.white,
-  },
-  messageContainer: {
-    backgroundColor: COLORS.darker + '30',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  messageText: {
-    fontSize: 16,
-    color: COLORS.white,
-    textAlign: 'center',
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  challengeText: {
-    fontSize: 14,
     color: COLORS.gold,
     textAlign: 'center',
     fontWeight: '600',
   },
-  buttonsContainer: {
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
     gap: 12,
   },
-  retryButton: {
-    backgroundColor: COLORS.gold,
-    paddingVertical: 16,
-    borderRadius: 12,
+  statBox: {
+    backgroundColor: COLORS.darker + '40',
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.gold + '40',
+    flex: 1,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 6,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: COLORS.light,
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    textShadowColor: COLORS.black,
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  messageContainer: {
+    backgroundColor: COLORS.darker + '30',
+    padding: 24,
+    borderRadius: 20,
+    marginBottom: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.gold + '20',
+  },
+  messageText: {
+    fontSize: 18,
+    color: COLORS.white,
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 26,
+    fontWeight: '500',
+  },
+  challengeText: {
+    fontSize: 18,
+    color: COLORS.gold,
+    textAlign: 'center',
+    fontWeight: '700',
+    textShadowColor: COLORS.black,
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  buttonsContainer: {
+    gap: 16,
+  },
+  retryButton: {
+    backgroundColor: COLORS.gold,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
+    borderWidth: 3,
+    borderColor: COLORS.gold + '80',
   },
   retryButtonText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.darker,
+    textShadowColor: COLORS.white + '40',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   backButton: {
     backgroundColor: COLORS.darker + '60',
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: COLORS.white + '30',
+    borderColor: COLORS.white + '40',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: COLORS.white,
+    textShadowColor: COLORS.black,
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   quizContent: {
     flex: 1,
