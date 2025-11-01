@@ -114,6 +114,16 @@ export const HomeScreen = ({ navigation }) => {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          {/* Settings Button - Positioned absolutely */}
+          <TouchableOpacity
+            style={styles.settingsButtonTop}
+            onPress={() => navigation.navigate('Settings')}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.settingsIcon}>⚙️</Text>
+          </TouchableOpacity>
+
           {/* Title with enhanced styling */}
           <Animated.View style={[styles.titleContainer, { transform: [{ translateY: titleY }] }]}>
             <Text style={styles.title}>🧩</Text>
@@ -314,6 +324,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 40,
     flex: 1,
+  },
+  settingsButtonTop: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: COLORS.white + '20',
+    borderRadius: 20,
+    padding: 8,
+    borderWidth: 2,
+    borderColor: COLORS.gold + '40',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 10,
+  },
+  settingsIcon: {
+    fontSize: 20,
   },
   title: {
     fontSize: 42,

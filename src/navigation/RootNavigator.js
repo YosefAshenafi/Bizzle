@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LevelSelectionScreen } from '../screens/LevelSelectionScreen';
 import { GameScreen } from '../screens/GameScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -32,6 +33,13 @@ export const RootNavigator = () => {
         <Stack.Screen
           name="Game"
           component={GameScreen}
+          options={{
+            animationTypeForReplace: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
           options={{
             animationTypeForReplace: 'fade',
           }}

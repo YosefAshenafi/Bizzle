@@ -1,4 +1,5 @@
 import { Audio } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let victorySound = null;
 let backgroundMusic = null;
@@ -46,9 +47,23 @@ export const loadLevelSound = async (soundFile) => {
   }
 };
 
+export const isSoundEnabled = async () => {
+  try {
+    const soundPref = await AsyncStorage.getItem('@biblepuzzlequest_sound_enabled');
+    return soundPref === null ? true : soundPref === 'true';
+  } catch (error) {
+    console.error('Error checking sound setting:', error);
+    return true; // Default to enabled
+  }
+};
+
 export const playLevelSound = async (soundFile) => {
   try {
     if (!soundFile) return;
+    
+    // Check if sound is enabled
+    const soundEnabled = await isSoundEnabled();
+    if (!soundEnabled) return;
     
     const soundKey = soundFile.toString();
     let sound = levelSounds[soundKey];
