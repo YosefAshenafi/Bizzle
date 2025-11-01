@@ -84,6 +84,7 @@ export const CustomSplashScreen = ({ onAnimationComplete }) => {
         
         {/* Bizzle Title */}
         <Text style={styles.title}>Bizzle</Text>
+        <Text style={styles.subtitle}>Bible Puzzle Quest</Text>
         
         {/* Underline */}
         <View style={styles.titleUnderline} />
@@ -169,5 +170,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 24,
+    color: COLORS.white,
+    fontWeight: '600',
+    marginBottom: 16,
+    letterSpacing: 1,
   },
 });

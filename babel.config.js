@@ -6,7 +6,7 @@ module.exports = function(api) {
       [
         'react-native-reanimated/plugin',
         {
-          globals: ['__workletRuntime'],
+          relativeSourceLocation: true,
         },
       ],
     ],
