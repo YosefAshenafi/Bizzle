@@ -286,13 +286,6 @@ const initializeGame = (isContinue = false) => {
          {/* Header */}
          <View style={styles.header}>
            <TouchableOpacity
-             onPress={() => navigation.navigate('Home')}
-             style={styles.homeButton}
-             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-           >
-             <Text style={styles.homeIcon}>🧩</Text>
-           </TouchableOpacity>
-           <TouchableOpacity
              onPress={handleBackToLevels}
              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
            >
@@ -408,21 +401,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: COLORS.darker + 'CC',
   },
-  homeButton: {
-    backgroundColor: COLORS.white + '20',
-    borderRadius: 20,
-    padding: 8,
-    borderWidth: 2,
-    borderColor: COLORS.gold + '40',
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  homeIcon: {
-    fontSize: 18,
-  },
+
   backButton: {
     fontSize: 16,
     fontWeight: '700',

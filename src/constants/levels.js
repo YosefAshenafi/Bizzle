@@ -103,64 +103,64 @@ export const getRandomVerse = () => {
 
 export const BIBLICAL_QUESTIONS = [
   {
-    question: "Who built the ark?",
-    options: ["Abraham", "Noah", "Moses", "David"],
+    question: "Who built an ark to save his family and the animals from the flood?",
+    options: ["Moses", "Noah", "Abraham", "Adam"],
     correctAnswer: 1,
     reference: "Genesis 6:13-22"
   },
   {
-    question: "What was the first miracle Jesus performed?",
-    options: ["Walking on water", "Turning water into wine", "Healing the blind", "Raising Lazarus"],
+    question: "What did God create on the first day?",
+    options: ["Animals", "Plants", "Light", "Human"],
+    correctAnswer: 2,
+    reference: "Genesis 1:3-5"
+  },
+  {
+    question: "Who was swallowed by a big fish?",
+    options: ["Jonah", "Daniel", "Peter", "Samson"],
+    correctAnswer: 0,
+    reference: "Jonah 1:17"
+  },
+  {
+    question: "What was the name of the giant that David defeated?",
+    options: ["Saul", "Goliath", "Samson", "Peter"],
+    correctAnswer: 1,
+    reference: "1 Samuel 17"
+  },
+  {
+    question: "Who was known for his wisdom and wrote many proverbs?",
+    options: ["David", "John", "Jacob", "Solomon"],
+    correctAnswer: 3,
+    reference: "1 Kings 4:29-34"
+  },
+  {
+    question: "What did Jesus turn water into at the wedding in Cana?",
+    options: ["Juice", "Wine", "Milk", "Tea"],
     correctAnswer: 1,
     reference: "John 2:1-11"
   },
   {
-    question: "Who defeated Goliath?",
-    options: ["Saul", "Jonathan", "David", "Samuel"],
-    correctAnswer: 2,
-    reference: "1 Samuel 17"
-  },
-  {
-    question: "How many days did God take to create the world?",
-    options: ["5", "6", "7", "8"],
-    correctAnswer: 1,
-    reference: "Genesis 1"
-  },
-  {
-    question: "Who was thrown into the lions' den?",
-    options: ["Jeremiah", "Ezekiel", "Daniel", "Isaiah"],
-    correctAnswer: 2,
-    reference: "Daniel 6"
-  },
-  {
-    question: "What is the Golden Rule?",
-    options: ["Love your neighbor as yourself", "Honor your father and mother", "Keep the Sabbath holy", "You shall not steal"],
+    question: "Who was the first man created by God?",
+    options: ["Adam", "Noah", "Moses", "Joshua"],
     correctAnswer: 0,
-    reference: "Matthew 7:12"
+    reference: "Genesis 2:7"
+  },
+  {
+    question: "What food did God provide the Israelites in the desert?",
+    options: ["Bread", "Manna", "Fish", "Pizza"],
+    correctAnswer: 1,
+    reference: "Exodus 16:14-15"
   },
   {
     question: "Who led the Israelites out of Egypt?",
-    options: ["Abraham", "Joseph", "Moses", "Joshua"],
-    correctAnswer: 2,
+    options: ["Joshua", "James", "Aaron", "Moses"],
+    correctAnswer: 3,
     reference: "Exodus 3-14"
   },
   {
-    question: "What is the last book of the Bible?",
-    options: ["Revelation", "Jude", "3 John", "Malachi"],
-    correctAnswer: 0,
-    reference: "Revelation 1:1"
-  },
-  {
-    question: "How many disciples did Jesus have?",
-    options: ["7", "10", "12", "15"],
-    correctAnswer: 2,
-    reference: "Matthew 10:1-4"
-  },
-  {
-    question: "Who denied Jesus three times?",
-    options: ["Judas", "Peter", "John", "Thomas"],
+    question: "What animal spoke to Balaam?",
+    options: ["A lion", "A donkey", "A goat", "A horse"],
     correctAnswer: 1,
-    reference: "Matthew 26:69-75"
+    reference: "Numbers 22:21-39"
   }
 ];
 
