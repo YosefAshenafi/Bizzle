@@ -21,7 +21,7 @@ import {
   debugShuffle,
 } from '../utils/puzzleLogic';
 import { saveProgress, saveLevelStats } from '../utils/storage';
-import { playVictorySound } from '../utils/audio';
+import { playVictorySound, loadLevelSound, playLevelSound, stopLevelSound } from '../utils/audio';
 
 export const GameScreen = ({ route, navigation }) => {
   const { level } = route.params;
@@ -42,6 +42,15 @@ export const GameScreen = ({ route, navigation }) => {
   useEffect(() => {
     setRestartCount(0);
     initializeGame();
+    
+    return () => {
+      // Stop level sound when leaving - cleanup will be handled by stopLevelSound
+      if (level.sound) {
+        stopLevelSound(level.sound).catch(error => {
+          console.log('Error stopping sound:', error);
+        });
+      }
+    };
   }, [level]);
 
   useEffect(() => {
@@ -54,23 +63,26 @@ export const GameScreen = ({ route, navigation }) => {
     return () => clearInterval(interval);
   }, [gameStarted, isComplete]);
 
-  const initializeGame = () => {
+const initializeGame = () => {
     const newTiles = generatePuzzleTiles(level.gridSize, restartCount);
-    
-    // Debug shuffle (remove in production)
-    if (__DEV__) {
-      debugShuffle(newTiles);
-    }
-    
     setTiles(newTiles);
     setMoveCount(0);
     setTimer(0);
-    setGameStarted(true);
+    setGameStarted(true); // Set to true so the puzzle shows
     setIsComplete(false);
-    setShowGameOver(false);
     setShowHints(false);
-    setHintsRemaining(3); // Reset hints on restart
-    victoryScale.setValue(0);
+    setHintsRemaining(3);
+    
+    // Load and play level sound when game starts (non-blocking)
+    if (level.sound) {
+      loadLevelSound(level.sound).then(() => {
+        playLevelSound(level.sound).catch(error => {
+          console.log('Sound playback failed, game continues:', error);
+        });
+      }).catch(error => {
+        console.log('Sound loading failed, game continues:', error);
+      });
+    }
   };
 
   const handleTilePress = (index1, index2) => {
@@ -118,7 +130,7 @@ export const GameScreen = ({ route, navigation }) => {
 
   const handleRestartLevel = () => {
     setRestartCount(restartCount + 1);
-    initializeGame();
+    initializeGame(); // This will handle the sound restart
   };
 
   const handleBackToLevels = () => {

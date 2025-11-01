@@ -2,6 +2,7 @@ import { Audio } from 'expo-av';
 
 let victorySound = null;
 let backgroundMusic = null;
+let levelSounds = {};
 
 export const initAudio = async () => {
   try {
@@ -11,6 +12,84 @@ export const initAudio = async () => {
     });
   } catch (error) {
     console.error('Error initializing audio:', error);
+  }
+};
+
+// Load and play level-specific sound
+export const loadLevelSound = async (soundFile) => {
+  try {
+    if (!soundFile) return null;
+    
+    const soundKey = soundFile.toString();
+    
+    // Unload previous level sound if exists
+    if (levelSounds[soundKey]) {
+      try {
+        await levelSounds[soundKey].unloadAsync();
+      } catch (unloadError) {
+        console.log('Error unloading previous sound:', unloadError);
+      }
+    }
+    
+    // Load new level sound with timeout and shouldPlay: false
+    const loadPromise = Audio.Sound.createAsync(soundFile, { shouldPlay: false });
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Sound loading timeout')), 5000)
+    );
+    
+    const { sound } = await Promise.race([loadPromise, timeoutPromise]);
+    levelSounds[soundKey] = sound;
+    return sound;
+  } catch (error) {
+    console.error('Error loading level sound:', error);
+    return null;
+  }
+};
+
+export const playLevelSound = async (soundFile) => {
+  try {
+    if (!soundFile) return;
+    
+    const soundKey = soundFile.toString();
+    let sound = levelSounds[soundKey];
+    
+    // Stop existing sound if it's playing
+    if (sound) {
+      try {
+        await sound.stopAsync();
+        await sound.setPositionAsync(0); // Reset to beginning
+      } catch (stopError) {
+        console.log('Error stopping sound:', stopError);
+      }
+    } else {
+      // Load sound if not already loaded
+      sound = await loadLevelSound(soundFile);
+    }
+    
+    if (sound) {
+      // Check if sound is loaded before playing
+      const status = await sound.getStatusAsync();
+      if (status.isLoaded) {
+        await sound.replayAsync();
+      }
+    }
+  } catch (error) {
+    console.error('Error playing level sound:', error);
+  }
+};
+
+export const stopLevelSound = async (soundFile) => {
+  try {
+    if (!soundFile) return;
+    
+    const soundKey = soundFile.toString();
+    if (levelSounds[soundKey]) {
+      await levelSounds[soundKey].stopAsync();
+      await levelSounds[soundKey].unloadAsync(); // Also unload to free memory
+      delete levelSounds[soundKey]; // Remove from the object
+    }
+  } catch (error) {
+    console.error('Error stopping level sound:', error);
   }
 };
 
@@ -60,6 +139,16 @@ export const cleanup = async () => {
       await victorySound.unloadAsync();
       victorySound = null;
     }
+    
+    // Clean up all level sounds
+    Object.values(levelSounds).forEach(async (sound) => {
+      try {
+        await sound.unloadAsync();
+      } catch (error) {
+        console.error('Error unloading level sound:', error);
+      }
+    });
+    levelSounds = {};
   } catch (error) {
     console.error('Error cleaning up audio:', error);
   }

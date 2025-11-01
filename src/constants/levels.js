@@ -6,6 +6,9 @@ import danielLionsImg from '../assets/images/daniel-lions.png';
 import jesusStormImg from '../assets/images/jesus-storm.png';
 import resurrectionImg from '../assets/images/resurrection.png';
 
+// Local sound paths for React Native
+import creationSound from '../assets/sounds/creation.mp3';
+
 const images = {
   creation: creationImg,
   'noah-ark': noahArkImg,
@@ -15,12 +18,23 @@ const images = {
   resurrection: resurrectionImg,
 };
 
+const sounds = {
+  creation: creationSound,
+  // Add more sounds as they become available
+  // 'noah-ark': noahArkSound,
+  // 'david-goliath': davidGoliathSound,
+  // 'daniel-lions': danielLionsSound,
+  // 'jesus-storm': jesusStormSound,
+  // 'resurrection': resurrectionSound,
+};
+
 export const LEVELS = [
   {
     id: 1,
     title: 'Creation',
     bibleRef: 'Genesis 1',
     image: images.creation,
+    sound: sounds.creation,
     story: `In the beginning, God created the heavens and the earth. On the first day, God said "Let there be light," and light appeared, separating day from night. Over the next five days, God created the sky, the land, the sea, plants, animals, and finally, mankind in His image. On the seventh day, God rested, blessing this day and calling it holy. Creation was complete, and it was very good.`,
     moves: 50,
     gridSize: 4,
