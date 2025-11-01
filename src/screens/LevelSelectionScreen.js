@@ -1,0 +1,181 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, GRADIENTS } from '../constants/colors';
+import { LEVELS } from '../constants/levels';
+import { LevelCard } from '../components/LevelCard';
+import { getProgress } from '../utils/storage';
+
+export const LevelSelectionScreen = ({ navigation }) => {
+  const [progress, setProgress] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProgress();
+    const unsubscribe = navigation.addListener('focus', loadProgress);
+    return unsubscribe;
+  }, [navigation]);
+
+  const loadProgress = async () => {
+    const progressData = await getProgress();
+    setProgress(progressData);
+    setLoading(false);
+  };
+
+  const isLevelUnlocked = (levelId) => {
+    if (levelId === 1) return true;
+    return progress[levelId - 1] === true;
+  };
+
+  const isLevelCompleted = (levelId) => {
+    return progress[levelId] === true;
+  };
+
+  const handleSelectLevel = (level) => {
+    navigation.navigate('Game', { level });
+  };
+
+  const completedCount = Object.values(progress).filter(Boolean).length;
+
+  return (
+    <LinearGradient
+      colors={GRADIENTS.secondary}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.backButton}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Choose Your Quest</Text>
+          <View style={styles.progressBadge}>
+            <Text style={styles.progressText}>{completedCount}/6</Text>
+          </View>
+        </View>
+
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            {LEVELS.map((level) => (
+              <View key={level.id}>
+                <LevelCard
+                  level={level}
+                  isUnlocked={isLevelUnlocked(level.id)}
+                  isCompleted={isLevelCompleted(level.id)}
+                  onPress={() => handleSelectLevel(level)}
+                />
+              </View>
+            ))}
+          </View>
+
+          {completedCount === 6 && (
+            <View style={styles.completionMessage}>
+              <Text style={styles.completionTitle}>🎉 Quest Complete! 🎉</Text>
+              <Text style={styles.completionText}>
+                You've unlocked all the sacred stories!
+              </Text>
+              <TouchableOpacity
+                style={styles.replayButton}
+                onPress={() => navigation.navigate('Home')}
+              >
+                <Text style={styles.replayButtonText}>Return Home</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.darker,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.darker + 'CC',
+  },
+  backButton: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.gold,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    flex: 1,
+    textAlign: 'center',
+  },
+  progressBadge: {
+    backgroundColor: COLORS.gold,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.darker,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  completionMessage: {
+    backgroundColor: COLORS.success + '20',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginVertical: 20,
+    borderWidth: 2,
+    borderColor: COLORS.success,
+  },
+  completionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginBottom: 10,
+  },
+  completionText: {
+    fontSize: 16,
+    color: COLORS.white,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  replayButton: {
+    backgroundColor: COLORS.success,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  replayButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.white,
+  },
+});

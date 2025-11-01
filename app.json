@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Bible Puzzle Quest",
+    "slug": "bible-puzzle-quest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.biblepuzzlequest.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.biblepuzzlequest.app"
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Bible Puzzle Quest to access your microphone.",
+          "audioAndVideoPermission": "Allow Bible Puzzle Quest to access your audio and video."
+        }
+      ]
+    ]
+  }
+}
