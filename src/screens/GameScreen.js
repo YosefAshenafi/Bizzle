@@ -5,7 +5,6 @@ import {
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
-  Alert,
   Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +18,7 @@ import {
   isPuzzleSolved,
   swapTiles,
   isValidMove,
+  debugShuffle,
 } from '../utils/puzzleLogic';
 import { saveProgress, saveLevelStats } from '../utils/storage';
 import { playVictorySound } from '../utils/audio';
@@ -33,10 +33,14 @@ export const GameScreen = ({ route, navigation }) => {
   const [isComplete, setIsComplete] = useState(false);
   const [timer, setTimer] = useState(0);
   const [showGameOver, setShowGameOver] = useState(false);
+  const [restartCount, setRestartCount] = useState(0);
+  const [showHints, setShowHints] = useState(false);
+  const [hintsRemaining, setHintsRemaining] = useState(3);
 
   const victoryScale = new Animated.Value(0);
 
   useEffect(() => {
+    setRestartCount(0);
     initializeGame();
   }, [level]);
 
@@ -51,12 +55,21 @@ export const GameScreen = ({ route, navigation }) => {
   }, [gameStarted, isComplete]);
 
   const initializeGame = () => {
-    const newTiles = generatePuzzleTiles(level.gridSize);
+    const newTiles = generatePuzzleTiles(level.gridSize, restartCount);
+    
+    // Debug shuffle (remove in production)
+    if (__DEV__) {
+      debugShuffle(newTiles);
+    }
+    
     setTiles(newTiles);
     setMoveCount(0);
     setTimer(0);
     setGameStarted(true);
     setIsComplete(false);
+    setShowGameOver(false);
+    setShowHints(false);
+    setHintsRemaining(3); // Reset hints on restart
     victoryScale.setValue(0);
   };
 
@@ -80,6 +93,7 @@ export const GameScreen = ({ route, navigation }) => {
   const completeLevel = async () => {
     setIsComplete(true);
     setGameStarted(false);
+    setRestartCount(0); // Reset restart count on completion
 
     Animated.timing(victoryScale, {
       toValue: 1,
@@ -103,6 +117,7 @@ export const GameScreen = ({ route, navigation }) => {
   
 
   const handleRestartLevel = () => {
+    setRestartCount(restartCount + 1);
     initializeGame();
   };
 
@@ -113,7 +128,20 @@ export const GameScreen = ({ route, navigation }) => {
 
   const handleRetryFromQuiz = () => {
     setShowGameOver(false);
+    setRestartCount(restartCount + 1);
     initializeGame();
+  };
+
+  const handleHint = () => {
+    if (hintsRemaining > 0) {
+      setShowHints(true);
+      setHintsRemaining(hintsRemaining - 1);
+      
+      // Hide hints after 3 seconds
+      setTimeout(() => {
+        setShowHints(false);
+      }, 3000);
+    }
   };
 
   const handleContinueFromStory = () => {
@@ -135,6 +163,8 @@ export const GameScreen = ({ route, navigation }) => {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+  
 
   return (
     <LinearGradient
@@ -177,6 +207,7 @@ export const GameScreen = ({ route, navigation }) => {
             onTilePress={handleTilePress}
             moveCount={moveCount}
             maxMoves={level.moves}
+            showHints={showHints}
           />
         )}
 
@@ -190,11 +221,14 @@ export const GameScreen = ({ route, navigation }) => {
             <Text style={styles.buttonText}>🔄 Restart</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, styles.backButtonStyle]}
-            onPress={handleBackToLevels}
+            style={[styles.button, styles.hintButtonStyle]}
+            onPress={handleHint}
+            disabled={hintsRemaining === 0}
             activeOpacity={0.7}
           >
-            <Text style={styles.buttonText}>← Back</Text>
+            <Text style={[styles.hintButtonText, hintsRemaining === 0 && styles.disabledButtonText]}>
+              💡 Hint ({hintsRemaining})
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -304,14 +338,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.gold,
   },
-  backButtonStyle: {
-    backgroundColor: COLORS.white + '20',
+  hintButtonStyle: {
+    backgroundColor: COLORS.gold + '20',
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: COLORS.gold,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.darker,
+  },
+  hintButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.gold,
+  },
+  disabledButtonText: {
+    color: COLORS.gray,
   },
 });

@@ -1,15 +1,21 @@
-// Shuffle array using Fisher-Yates algorithm
+// Shuffle array using Fisher-Yates algorithm and update positions
 const shuffle = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+  
+  // Update positions based on new array order
+  arr.forEach((tile, index) => {
+    tile.position = index;
+  });
+  
   return arr;
 };
 
-// Generate puzzle tiles from image
-export const generatePuzzleTiles = (gridSize) => {
+// Generate puzzle tiles from image with difficulty-based shuffling
+export const generatePuzzleTiles = (gridSize, restartCount = 0) => {
   const totalTiles = gridSize * gridSize;
   const tiles = Array.from({ length: totalTiles - 1 }, (_, i) => ({
     id: i,
@@ -26,8 +32,91 @@ export const generatePuzzleTiles = (gridSize) => {
     isEmpty: true,
   });
   
-  return shuffle(tiles);
+  let shuffledTiles;
+  
+  // Apply difficulty-based shuffling
+  if (restartCount === 1) {
+    // First restart: make it difficult (more shuffles)
+    shuffledTiles = shuffleWithDifficulty(tiles, 'hard');
+  } else if (restartCount === 3) {
+    // Third restart: make it super simple (fewer shuffles)
+    shuffledTiles = shuffleWithDifficulty(tiles, 'easy');
+  } else {
+    // Default: random shuffle
+    shuffledTiles = shuffle(tiles);
+  }
+  
+  // Ensure puzzle is not solved (rare edge case)
+  if (isPuzzleSolved(shuffledTiles)) {
+    // If somehow solved, do one more shuffle
+    shuffledTiles = restartCount === 3 ? shuffleWithDifficulty(shuffledTiles, 'easy') : shuffle(shuffledTiles);
+  }
+  
+  return shuffledTiles;
 };
+
+// Shuffle with specific difficulty levels
+const shuffleWithDifficulty = (tiles, difficulty) => {
+  const arr = [...tiles];
+  const totalTiles = arr.length;
+  const gridSize = Math.sqrt(totalTiles);
+  
+  if (difficulty === 'hard') {
+    // Hard: Maximum shuffling - ensure it's solvable but very scrambled
+    let shuffleCount = Math.min(100, totalTiles * 3); // Lots of valid moves
+    for (let i = 0; i < shuffleCount; i++) {
+      const emptyTileIndex = arr.findIndex(tile => tile.isEmpty);
+      const emptyTile = arr[emptyTileIndex];
+      const adjacentPositions = getValidAdjacentPositions(emptyTile.position, gridSize);
+      
+      if (adjacentPositions.length > 0) {
+        const randomPosition = adjacentPositions[Math.floor(Math.random() * adjacentPositions.length)];
+        const tileToSwapIndex = arr.findIndex(tile => tile.position === randomPosition);
+        
+        // Swap positions
+        const tempPosition = emptyTile.position;
+        arr[emptyTileIndex].position = randomPosition;
+        arr[tileToSwapIndex].position = tempPosition;
+      }
+    }
+  } else if (difficulty === 'easy') {
+    // Easy: Minimal shuffling - just a few moves from solved
+    let shuffleCount = Math.min(5, Math.floor(totalTiles / 3)); // Very few shuffles
+    for (let i = 0; i < shuffleCount; i++) {
+      const emptyTileIndex = arr.findIndex(tile => tile.isEmpty);
+      const emptyTile = arr[emptyTileIndex];
+      const adjacentPositions = getValidAdjacentPositions(emptyTile.position, gridSize);
+      
+      if (adjacentPositions.length > 0) {
+        const randomPosition = adjacentPositions[Math.floor(Math.random() * adjacentPositions.length)];
+        const tileToSwapIndex = arr.findIndex(tile => tile.position === randomPosition);
+        
+        // Swap positions
+        const tempPosition = emptyTile.position;
+        arr[emptyTileIndex].position = randomPosition;
+        arr[tileToSwapIndex].position = tempPosition;
+      }
+    }
+  }
+  
+  return arr;
+};
+
+// Get valid adjacent positions for a given position
+const getValidAdjacentPositions = (position, gridSize) => {
+  const row = Math.floor(position / gridSize);
+  const col = position % gridSize;
+  const adjacent = [];
+
+  if (row > 0) adjacent.push(position - gridSize); // up
+  if (row < gridSize - 1) adjacent.push(position + gridSize); // down
+  if (col > 0) adjacent.push(position - 1); // left
+  if (col < gridSize - 1) adjacent.push(position + 1); // right
+
+  return adjacent;
+};
+
+
 
 // Check if puzzle is solved
 export const isPuzzleSolved = (tiles) => {
@@ -73,4 +162,21 @@ export const isValidMove = (fromIndex, toIndex, gridSize, tiles) => {
   
   const adjacent = getAdjacentTiles(fromTile.position, gridSize);
   return adjacent.includes(toTile.position);
+};
+
+// Debug function to check shuffle effectiveness
+export const debugShuffle = (tiles) => {
+  const correctPositions = tiles.filter(tile => tile.position === tile.correctPosition).length;
+  const totalTiles = tiles.length;
+  const shuffledPercentage = ((totalTiles - correctPositions) / totalTiles * 100).toFixed(1);
+  
+  console.log(`Shuffle Debug: ${correctPositions}/${totalTiles} tiles in correct position (${shuffledPercentage}% shuffled)`);
+  
+  tiles.forEach((tile, index) => {
+    if (tile.position !== tile.correctPosition) {
+      console.log(`Tile ${tile.id}: position ${tile.position} (should be ${tile.correctPosition})`);
+    }
+  });
+  
+  return { correctPositions, totalTiles, shuffledPercentage };
 };

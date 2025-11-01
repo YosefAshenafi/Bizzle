@@ -20,6 +20,7 @@ export const PuzzleGrid = ({
   onTilePress,
   moveCount,
   maxMoves,
+  showHints,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -93,6 +94,7 @@ export const PuzzleGrid = ({
             imageUrl={imageUrl}
             gridSize={gridSize}
             isSelected={selectedIndex === index}
+            showHints={showHints}
             onPress={() => handleTilePress(index)}
           />
         ))}
@@ -139,6 +141,7 @@ const PuzzleTile = ({
   imageUrl,
   gridSize,
   isSelected,
+  showHints,
   onPress,
 }) => {
   const [scaleAnim] = useState(new Animated.Value(1));
@@ -179,7 +182,7 @@ const PuzzleTile = ({
     );
   }
 
-  return (
+return (
     <Animated.View
       style={[
         styles.tile,
@@ -216,13 +219,22 @@ const PuzzleTile = ({
               {
                 width: gridSize * tileSize,
                 height: gridSize * tileSize,
-                // Position the image to show the correct portion
+                // Position image to show the correct portion
                 left: -((tile.correctPosition % gridSize) * tileSize),
                 top: -(Math.floor(tile.correctPosition / gridSize) * tileSize),
               },
             ]}
           />
         </View>
+        
+        {/* Hint Number Overlay */}
+        {showHints && !tile.isEmpty && (
+          <View style={styles.hintOverlay}>
+            <Text style={styles.hintNumber}>
+              {tile.correctPosition + 1}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -339,5 +351,24 @@ const styles = StyleSheet.create({
     color: COLORS.darker,
     fontSize: 16,
     fontWeight: '700',
+  },
+  hintOverlay: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+  },
+  hintNumber: {
+    color: COLORS.gold,
+    fontSize: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
