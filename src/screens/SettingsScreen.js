@@ -51,14 +51,16 @@ export const SettingsScreen = ({ navigation }) => {
       let bestMovesValue = null;
       let gamesCount = 0;
       
-      Object.values(stats).forEach(stat => {
+      Object.entries(stats).forEach(([levelId, stat]) => {
         if (stat.completed) {
           gamesCount++;
-          if (stat.timeTaken && (bestTimeValue === null || stat.timeTaken < bestTimeValue)) {
-            bestTimeValue = stat.timeTaken;
+          
+          // Track best records (same logic as HomeScreen)
+          if (stat.time && (bestTimeValue === null || stat.time < bestTimeValue)) {
+            bestTimeValue = stat.time;
           }
-          if (stat.movesUsed !== undefined && (bestMovesValue === null || stat.movesUsed < bestMovesValue)) {
-            bestMovesValue = stat.movesUsed;
+          if (stat.moves !== undefined && (bestMovesValue === null || stat.moves < bestMovesValue)) {
+            bestMovesValue = stat.moves;
           }
         }
       });
