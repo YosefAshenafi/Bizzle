@@ -30,6 +30,7 @@ import { saveProgress, saveLevelStats, saveCurrentGameState, loadCurrentGameStat
 import { playVictorySound, loadLevelSound, playLevelSound, stopLevelSound, stopAllLevelSounds, isSoundEnabled } from '../utils/audio';
 import { useAuth } from '../contexts/AuthContext';
 import { LeaderboardService } from '../services/leaderboardService';
+import Confetti from 'react-native-confetti-view';
 
 export const GameScreen = ({ route, navigation }) => {
   const { level, isContinue = false } = route.params || {};
@@ -74,6 +75,7 @@ export const GameScreen = ({ route, navigation }) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const victoryScale = new Animated.Value(0);
 
@@ -187,18 +189,19 @@ const initializeGame = (isContinue = false) => {
     }
 
     const newTiles = swapTiles(tiles, index1, index2);
+    const newMoveCount = moveCount + 1;
     setTiles(newTiles);
-    setMoveCount(moveCount + 1);
+    setMoveCount(newMoveCount);
 
     if (isPuzzleSolved(newTiles)) {
-      completeLevel();
-    } else if (moveCount + 1 >= safeLevel.moves) {
+      completeLevel(newMoveCount);
+    } else if (newMoveCount >= safeLevel.moves) {
       setShowGameOver(true);
       setGameStarted(false);
     }
   };
 
-  const completeLevel = async () => {
+  const completeLevel = async (finalMoveCount = moveCount) => {
     setIsComplete(true);
     setGameStarted(false);
     setRestartCount(0); // Reset restart count on completion
@@ -211,7 +214,7 @@ const initializeGame = (isContinue = false) => {
 
     await saveProgress(safeLevel.id, true);
     await saveLevelStats(safeLevel.id, {
-      moves: moveCount,
+      moves: finalMoveCount,
       time: timer,
       completed: true,
       timestamp: Date.now(),
@@ -220,7 +223,7 @@ const initializeGame = (isContinue = false) => {
     // Calculate score based on time and moves
     const baseScore = 1000;
     const timePenalty = Math.max(0, timer * 2);
-    const movePenalty = Math.max(0, moveCount * 5);
+    const movePenalty = Math.max(0, finalMoveCount * 5);
     const score = Math.max(100, baseScore - timePenalty - movePenalty);
 
     // Save to leaderboard if user is authenticated
@@ -231,7 +234,7 @@ const initializeGame = (isContinue = false) => {
           safeLevel.id,
           score,
           timer,
-          moveCount
+          finalMoveCount
         );
       } catch (error) {
         console.error('Error saving to leaderboard:', error);
@@ -250,12 +253,20 @@ const initializeGame = (isContinue = false) => {
        });
      }
      
-     setTimeout(() => {
-       setShowFlipCard(true);
-     }, 500);
+setTimeout(() => {
+        setShowFlipCard(true);
+        // Trigger confetti celebration
+        triggerConfetti();
+      }, 500);
   };
 
-  
+  const triggerConfetti = () => {
+    setShowConfetti(true);
+    // Hide confetti after 3 seconds
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 3000);
+  };
 
   const handleRestartLevel = () => {
     setRestartCount(restartCount + 1);
@@ -319,6 +330,10 @@ const initializeGame = (isContinue = false) => {
 
   const handleContinueFromFlipCard = () => {
     setShowFlipCard(false);
+    // Navigate back to level selection after a short delay
+    setTimeout(() => {
+      navigation.navigate('Levels');
+    }, 300);
   };
 
   const handleQuizClose = () => {
@@ -449,8 +464,10 @@ const initializeGame = (isContinue = false) => {
 
       <PuzzleFlipCard
         visible={showFlipCard}
-        level={safeLevel}
-        onContinue={handleContinueFromFlipCard}
+        levelData={safeLevel}
+        onClose={handleContinueFromFlipCard}
+        moveCount={moveCount}
+        timeTaken={timer}
       />
 
       <QuizModal
@@ -473,6 +490,15 @@ const initializeGame = (isContinue = false) => {
         timeTaken={timer}
       />
       </SafeAreaView>
+      
+      {/* Confetti Celebration */}
+      {showConfetti && (
+        <Confetti
+          confettiCount={50}
+          duration={3000}
+          untilStopped={true}
+        />
+      )}
     </LinearGradient>
   );
 };

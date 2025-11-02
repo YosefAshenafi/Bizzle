@@ -201,14 +201,14 @@ const loadProgress = async () => {
            </TouchableOpacity>
 
            {/* Leaderboard Button */}
-           <TouchableOpacity
+           {/* <TouchableOpacity
              style={styles.leaderboardButtonTop}
              onPress={() => navigation.navigate('Leaderboard')}
              activeOpacity={0.7}
              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
            >
              <Text style={styles.leaderboardIcon}>🏆</Text>
-           </TouchableOpacity>
+           </TouchableOpacity> */}
 
           {/* Title with enhanced styling */}
           <Animated.View style={[styles.titleContainer, { transform: [{ translateY: titleY }] }]}>
@@ -338,7 +338,7 @@ const loadProgress = async () => {
              </TouchableOpacity>
            </Animated.View>
 
-           {/* User Info and Sign Out */}
+           {/* User Info and Sign Out
            {user && (
              <View style={styles.userInfoContainer}>
                <View style={styles.userInfoCard}>
@@ -354,7 +354,7 @@ const loadProgress = async () => {
                  </TouchableOpacity>
                </View>
              </View>
-           )}
+           )} */}
 
           {/* Enhanced Footer message */}
           <View style={styles.footer}>

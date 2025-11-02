@@ -54,7 +54,12 @@ export const getLevelStats = async (levelId) => {
 
 export const clearAllData = async () => {
   try {
-    await AsyncStorage.multiRemove([PROGRESS_KEY, GAME_DATA_KEY]);
+    // Get all keys and filter for biblepuzzlequest keys
+    const allKeys = await AsyncStorage.getAllKeys();
+    const biblePuzzleKeys = allKeys.filter(key => key.startsWith('@biblepuzzlequest'));
+    
+    // Remove all biblepuzzlequest data
+    await AsyncStorage.multiRemove(biblePuzzleKeys);
     return true;
   } catch (error) {
     console.error('Error clearing data:', error);

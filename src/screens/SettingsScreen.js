@@ -28,6 +28,7 @@ export const SettingsScreen = ({ navigation }) => {
   const [totalGames, setTotalGames] = useState(0);
   const [bestTime, setBestTime] = useState(null);
   const [bestMoves, setBestMoves] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [userBadges, setUserBadges] = useState([]);
   
@@ -144,6 +145,34 @@ const handleAboutUs = () => {
     );
   };
 
+  const handleResetData = async () => {
+    try {
+      // Clear all AsyncStorage data
+      await AsyncStorage.clear();
+      
+      // Reset local state
+      setTotalGames(0);
+      setBestTime(null);
+      setBestMoves(null);
+      setUserBadges([]);
+      
+      setShowResetModal(false);
+      
+      Alert.alert(
+        'Success!',
+        'All your data has been reset successfully.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      Alert.alert(
+        'Error',
+        'Failed to reset data. Please try again.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
+
   return (
     <LinearGradient
       colors={GRADIENTS.secondary}
@@ -253,6 +282,13 @@ const handleAboutUs = () => {
               <Text style={styles.menuItemText}>📱 App Version</Text>
               <Text style={styles.versionText}>1.0.0</Text>
             </View>
+            <TouchableOpacity 
+              style={[styles.menuItem, styles.resetMenuItem]} 
+              onPress={() => setShowResetModal(true)}
+            >
+              <Text style={[styles.menuItemText, styles.resetMenuItemText]}>🔄 Reset All Data</Text>
+              <Text style={styles.menuItemArrow}>›</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Footer */}
@@ -265,6 +301,32 @@ const handleAboutUs = () => {
             </Text>
           </View>
         </ScrollView>
+
+        {/* Reset Confirmation Modal */}
+        {showResetModal && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>⚠️ Reset All Data?</Text>
+              <Text style={styles.modalMessage}>
+                This will permanently delete all your progress, achievements, badges, and settings. This action cannot be undone.
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => setShowResetModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.confirmButton]}
+                  onPress={handleResetData}
+                >
+                  <Text style={styles.confirmButtonText}>Reset</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -526,5 +588,81 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     paddingVertical: 20,
+  },
+  // Reset button styles
+  resetMenuItem: {
+    borderColor: COLORS.error + '50',
+    backgroundColor: COLORS.error + '10',
+  },
+  resetMenuItemText: {
+    color: COLORS.error,
+  },
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: COLORS.darker,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+    borderWidth: 2,
+    borderColor: COLORS.gold + '30',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.error,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: COLORS.light,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: COLORS.white + '20',
+    borderWidth: 1,
+    borderColor: COLORS.white + '30',
+  },
+  confirmButton: {
+    backgroundColor: COLORS.error,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });
