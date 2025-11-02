@@ -248,7 +248,7 @@ const handleAboutUs = () => {
           </View>
 
           {/* Badges */}
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <Text style={styles.sectionTitle}>🎖️ Badges</Text>
             <View style={styles.badgesContainer}>
               {userBadges.length > 0 ? (
@@ -269,7 +269,7 @@ const handleAboutUs = () => {
                 <Text style={styles.noBadgesText}>No badges earned yet. Keep playing!</Text>
               )}
             </View>
-          </View>
+          </View> */}
 
           {/* App Info */}
           <View style={styles.section}>
