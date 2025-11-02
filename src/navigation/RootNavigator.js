@@ -5,46 +5,80 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { LevelSelectionScreen } from '../screens/LevelSelectionScreen';
 import { GameScreen } from '../screens/GameScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { AuthScreen } from '../screens/AuthScreen';
+import { LeaderboardScreen } from '../screens/LeaderboardScreen';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
 const Stack = createStackNavigator();
 
-export const RootNavigator = () => {
+const AppNavigator = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-          animationEnabled: true,
-          cardStyle: { backgroundColor: 'transparent' },
-        }}
-      >
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animationEnabled: true,
+        cardStyle: { backgroundColor: 'transparent' },
+      }}
+    >
+      {!user ? (
         <Stack.Screen
-          name="Home"
-          component={HomeScreen}
+          name="Auth"
+          component={AuthScreen}
           options={{ animationTypeForReplace: 'pop' }}
         />
-        <Stack.Screen
-          name="Levels"
-          component={LevelSelectionScreen}
-          options={{
-            animationTypeForReplace: 'fade',
-          }}
-        />
-        <Stack.Screen
-          name="Game"
-          component={GameScreen}
-          options={{
-            animationTypeForReplace: 'fade',
-          }}
-        />
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{
-            animationTypeForReplace: 'fade',
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+      ) : (
+        <>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ animationTypeForReplace: 'pop' }}
+          />
+          <Stack.Screen
+            name="Levels"
+            component={LevelSelectionScreen}
+            options={{
+              animationTypeForReplace: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name="Game"
+            component={GameScreen}
+            options={{
+              animationTypeForReplace: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{
+              animationTypeForReplace: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name="Leaderboard"
+            component={LeaderboardScreen}
+            options={{
+              animationTypeForReplace: 'fade',
+            }}
+          />
+        </>
+      )}
+    </Stack.Navigator>
+  );
+};
+
+export const RootNavigator = () => {
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </AuthProvider>
   );
 };

@@ -15,10 +15,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
 import { getRandomVerse, LEVELS } from '../constants/levels';
 import { getProgress, getAllStats, loadCurrentGameState } from '../utils/storage';
+import { useAuth } from '../contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 export const HomeScreen = ({ navigation }) => {
+  const { user, signOut } = useAuth();
   const [verse, setVerse] = useState('');
   const [completedCount, setCompletedCount] = useState(0);
   const [bestTime, setBestTime] = useState(null);
@@ -183,15 +185,25 @@ const loadProgress = async () => {
              />
            }
          >
-          {/* Settings Button - Positioned absolutely */}
-          <TouchableOpacity
-            style={styles.settingsButtonTop}
-            onPress={() => navigation.navigate('Settings')}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={styles.settingsIcon}>⚙️</Text>
-          </TouchableOpacity>
+           {/* Settings Button - Positioned absolutely */}
+           <TouchableOpacity
+             style={styles.settingsButtonTop}
+             onPress={() => navigation.navigate('Settings')}
+             activeOpacity={0.7}
+             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+           >
+             <Text style={styles.settingsIcon}>⚙️</Text>
+           </TouchableOpacity>
+
+           {/* Leaderboard Button */}
+           <TouchableOpacity
+             style={styles.leaderboardButtonTop}
+             onPress={() => navigation.navigate('Leaderboard')}
+             activeOpacity={0.7}
+             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+           >
+             <Text style={styles.leaderboardIcon}>🏆</Text>
+           </TouchableOpacity>
 
           {/* Title with enhanced styling */}
           <Animated.View style={[styles.titleContainer, { transform: [{ translateY: titleY }] }]}>
@@ -311,15 +323,33 @@ const loadProgress = async () => {
             </TouchableOpacity>
           </Animated.View>
 
-          <Animated.View style={[styles.buttonContainer, { transform: [{ scale: button2Scale }] }]}>
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={() => navigation.navigate('Levels')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.secondaryButtonText}>🎮 Select Level</Text>
-            </TouchableOpacity>
-          </Animated.View>
+           <Animated.View style={[styles.buttonContainer, { transform: [{ scale: button2Scale }] }]}>
+             <TouchableOpacity
+               style={styles.secondaryButton}
+               onPress={() => navigation.navigate('Levels')}
+               activeOpacity={0.8}
+             >
+               <Text style={styles.secondaryButtonText}>🎮 Select Level</Text>
+             </TouchableOpacity>
+           </Animated.View>
+
+           {/* User Info and Sign Out */}
+           {user && (
+             <View style={styles.userInfoContainer}>
+               <View style={styles.userInfoCard}>
+                 <Text style={styles.userInfoText}>
+                   👤 {user.displayName || 'Anonymous'}
+                 </Text>
+                 <TouchableOpacity
+                   style={styles.signOutButton}
+                   onPress={signOut}
+                   activeOpacity={0.7}
+                 >
+                   <Text style={styles.signOutText}>Sign Out</Text>
+                 </TouchableOpacity>
+               </View>
+             </View>
+           )}
 
           {/* Enhanced Footer message */}
           <View style={styles.footer}>
@@ -397,6 +427,16 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   settingsIcon: {
+    fontSize: 20,
+  },
+  leaderboardButtonTop: {
+    position: 'absolute',
+    top: 20,
+    right: 60,
+    elevation: 4,
+    zIndex: 10,
+  },
+  leaderboardIcon: {
     fontSize: 20,
   },
   title: {
@@ -748,5 +788,40 @@ const styles = StyleSheet.create({
     color: COLORS.light,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  userInfoContainer: {
+    marginBottom: 20,
+  },
+  userInfoCard: {
+    backgroundColor: COLORS.white + '15',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  userInfoText: {
+    fontSize: 16,
+    color: COLORS.white,
+    fontWeight: '600',
+    flex: 1,
+  },
+  signOutButton: {
+    backgroundColor: COLORS.white + '20',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.white + '40',
+  },
+  signOutText: {
+    fontSize: 14,
+    color: COLORS.white,
+    fontWeight: '600',
   },
 });

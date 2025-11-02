@@ -26,11 +26,7 @@
     },
     "plugins": [
       [
-        "expo-av",
-        {
-          "microphonePermission": "Allow Bible Puzzle Quest to access your microphone.",
-          "audioAndVideoPermission": "Allow Bible Puzzle Quest to access your audio and video."
-        }
+        "@react-native-google-signin/google-signin"
       ]
     ],
     "experiments": {

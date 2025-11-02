@@ -23,9 +23,12 @@ import {
 } from '../utils/puzzleLogic';
 import { saveProgress, saveLevelStats, saveCurrentGameState, loadCurrentGameState, clearCurrentGameState } from '../utils/storage';
 import { playVictorySound, loadLevelSound, playLevelSound, stopLevelSound, isSoundEnabled } from '../utils/audio';
+import { useAuth } from '../contexts/AuthContext';
+import { LeaderboardService } from '../services/leaderboardService';
 
 export const GameScreen = ({ route, navigation }) => {
   const { level, isContinue = false } = route.params;
+  const { user } = useAuth();
   const [tiles, setTiles] = useState([]);
   const [moveCount, setMoveCount] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
@@ -182,6 +185,27 @@ const initializeGame = (isContinue = false) => {
       completed: true,
       timestamp: Date.now(),
     });
+
+    // Calculate score based on time and moves
+    const baseScore = 1000;
+    const timePenalty = Math.max(0, timer * 2);
+    const movePenalty = Math.max(0, moveCount * 5);
+    const score = Math.max(100, baseScore - timePenalty - movePenalty);
+
+    // Save to leaderboard if user is authenticated
+    if (user) {
+      try {
+        await LeaderboardService.updateUserScore(
+          user.uid,
+          level.id,
+          score,
+          timer,
+          moveCount
+        );
+      } catch (error) {
+        console.error('Error saving to leaderboard:', error);
+      }
+    }
 
     // Clear saved game state when completed
     await clearCurrentGameState(level.id);

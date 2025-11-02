@@ -101,7 +101,7 @@ export const stopLevelSound = async (soundFile) => {
     if (levelSounds[soundKey]) {
       await levelSounds[soundKey].stopAsync();
       await levelSounds[soundKey].unloadAsync(); // Also unload to free memory
-      delete levelSounds[soundKey]; // Remove from the object
+      delete levelSounds[soundKey]; // Remove from object
     }
   } catch (error) {
     console.error('Error stopping level sound:', error);
