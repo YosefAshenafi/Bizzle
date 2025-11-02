@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -212,9 +213,11 @@ const loadProgress = async () => {
 
           {/* Title with enhanced styling */}
           <Animated.View style={[styles.titleContainer, { transform: [{ translateY: titleY }] }]}>
-            <Text style={styles.title}>🧩</Text>
-            <Text style={styles.titleHighlight}>Bizzle</Text>
-            <View style={styles.titleUnderline} />
+            <Image
+              source={require('../assets/adaptive-icon.png')}
+              style={styles.appIcon}
+              resizeMode="contain"
+            />
           </Animated.View>
 
           {/* Enhanced decorative elements */}
@@ -421,7 +424,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 40,
+    marginBottom: 10,
     flex: 1,
   },
   settingsButtonTop: {
@@ -443,6 +446,11 @@ const styles = StyleSheet.create({
   },
   leaderboardIcon: {
     fontSize: 20,
+  },
+  appIcon: {
+    width: 600,
+    height: 300,
+    marginBottom: 16,
   },
   title: {
     fontSize: 42,

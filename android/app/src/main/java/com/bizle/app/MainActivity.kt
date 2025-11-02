@@ -1,4 +1,4 @@
-package com.biblepuzzlequest.app
+package com.bizle.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

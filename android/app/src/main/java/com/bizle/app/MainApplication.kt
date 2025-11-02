@@ -1,4 +1,4 @@
-package com.biblepuzzlequest.app
+package com.bizle.app
 
 import android.app.Application
 import android.content.res.Configuration
