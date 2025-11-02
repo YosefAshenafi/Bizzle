@@ -492,15 +492,6 @@ setTimeout(() => {
       />
       </SafeAreaView>
     </LinearGradient>
-    
-    {/* Confetti Celebration - On top of everything */}
-    {showConfetti && (
-      <Confetti
-        confettiCount={50}
-        duration={3000}
-        untilStopped={true}
-      />
-    )}
   </>
   );
 };

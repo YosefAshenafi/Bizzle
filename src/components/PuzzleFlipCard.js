@@ -12,12 +12,14 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
+import Confetti from 'react-native-confetti-view';
 
 const { width, height } = Dimensions.get('window');
 
 export const PuzzleFlipCard = ({ visible, levelData, onClose, moveCount, timeTaken }) => {
   const [flipAnimation] = useState(new Animated.Value(0));
   const [contentOpacity] = useState(new Animated.Value(0));
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -33,11 +35,17 @@ export const PuzzleFlipCard = ({ visible, levelData, onClose, moveCount, timeTak
           duration: 500,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start(() => {
+        // Show confetti after flip animation completes
+        setShowConfetti(true);
+        // Hide confetti after 3 seconds
+        setTimeout(() => setShowConfetti(false), 3000);
+      });
     } else {
       // Reset animations
       flipAnimation.setValue(0);
       contentOpacity.setValue(0);
+      setShowConfetti(false);
     }
   }, [visible]);
 
@@ -171,7 +179,7 @@ export const PuzzleFlipCard = ({ visible, levelData, onClose, moveCount, timeTak
                     >
                       <Text style={styles.closeButtonText}>Close</Text>
                     </LinearGradient>
-                  </TouchableOpacity>
+</TouchableOpacity>
                 </View>
               </LinearGradient>
             </Animated.View>
@@ -185,6 +193,17 @@ export const PuzzleFlipCard = ({ visible, levelData, onClose, moveCount, timeTak
           />
         </View>
       </View>
+      
+      {/* Confetti Celebration - Absolutely positioned on top */}
+      {showConfetti && (
+        <View style={styles.confettiContainer}>
+          <Confetti
+            confettiCount={80}
+            duration={1500}
+            untilStopped={true}
+          />
+        </View>
+      )}
     </Modal>
   );
 };
@@ -369,5 +388,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
   },
 });
