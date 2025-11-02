@@ -6,14 +6,19 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Animated,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PuzzleGrid } from '../components/PuzzleGrid';
+import { JigsawGrid } from '../components/JigsawGrid';
+import { PuzzleTypeSelector } from '../components/PuzzleTypeSelector';
 import { StoryModal } from '../components/StoryModal';
 import { PuzzleFlipCard } from '../components/PuzzleFlipCard';
+import { QuizModal } from '../components/QuizModal';
 import { GameOverModal } from '../components/GameOverModal';
+
 import {
   generatePuzzleTiles,
   isPuzzleSolved,
@@ -27,7 +32,32 @@ import { useAuth } from '../contexts/AuthContext';
 import { LeaderboardService } from '../services/leaderboardService';
 
 export const GameScreen = ({ route, navigation }) => {
-  const { level, isContinue = false } = route.params;
+  const { level, isContinue = false } = route.params || {};
+  
+  // Safety check for level with default values
+  const safeLevel = level || {
+    id: 1,
+    title: 'Loading...',
+    bibleRef: 'Genesis 1',
+    verse: '"In the beginning God created the heavens and the earth." - Genesis 1:1',
+    gridSize: 4,
+    moves: 50,
+    slidingMoves: 50,
+    jigsawMoves: 40,
+    image: null,
+    sound: null
+  };
+  
+  // Show loading state if level is not available yet
+  if (!level) {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F172A'}}>
+        <Text style={{color: '#F59E0B', fontSize: 18, fontWeight: 'bold'}}>
+          Loading level data...
+        </Text>
+      </View>
+    );
+  }
   const { user } = useAuth();
   const [tiles, setTiles] = useState([]);
   const [moveCount, setMoveCount] = useState(0);
@@ -41,6 +71,9 @@ export const GameScreen = ({ route, navigation }) => {
   const [showHints, setShowHints] = useState(false);
   const [hintsRemaining, setHintsRemaining] = useState(3);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [userAnswer, setUserAnswer] = useState('');
 
   const victoryScale = new Animated.Value(0);
 
@@ -80,7 +113,7 @@ export const GameScreen = ({ route, navigation }) => {
         hintsRemaining,
         timestamp: Date.now()
       };
-      saveCurrentGameState(level.id, gameState);
+      saveCurrentGameState(safeLevel.id, gameState);
     }
   }, [tiles, moveCount, timer, showHints, hintsRemaining, gameStarted, isComplete]);
 
@@ -95,14 +128,14 @@ export const GameScreen = ({ route, navigation }) => {
         hintsRemaining,
         timestamp: Date.now()
       };
-      saveCurrentGameState(level.id, gameState);
+      saveCurrentGameState(safeLevel.id, gameState);
     }
   }, [tiles, moveCount, timer, showHints, hintsRemaining, gameStarted, isComplete]);
 
 const initializeGame = (isContinue = false) => {
     if (isContinue) {
       // Try to load saved game state
-      loadCurrentGameState(level.id).then(savedState => {
+      loadCurrentGameState(safeLevel.id).then(savedState => {
         if (savedState) {
           // Restore saved state
           setTiles(savedState.tiles);
@@ -127,7 +160,7 @@ const initializeGame = (isContinue = false) => {
   };
 
   const startFreshGame = () => {
-    const newTiles = generatePuzzleTiles(level.gridSize, restartCount, level.id);
+    const newTiles = generatePuzzleTiles(safeLevel.gridSize, restartCount, safeLevel.id);
     setTiles(newTiles);
     setMoveCount(0);
     setTimer(0);
@@ -137,9 +170,9 @@ const initializeGame = (isContinue = false) => {
     setHintsRemaining(3);
     
     // Load and play level sound when game starts (non-blocking)
-    if (level.sound) {
-      loadLevelSound(level.sound).then(() => {
-        playLevelSound(level.sound).catch(error => {
+    if (safeLevel.sound) {
+      loadLevelSound(safeLevel.sound).then(() => {
+        playLevelSound(safeLevel.sound).catch(error => {
           console.log('Sound playback failed, game continues:', error);
         });
       }).catch(error => {
@@ -149,7 +182,7 @@ const initializeGame = (isContinue = false) => {
   };
 
   const handleTilePress = (index1, index2) => {
-    if (!isValidMove(index1, index2, level.gridSize, tiles)) {
+    if (!isValidMove(index1, index2, safeLevel.gridSize, tiles)) {
       return;
     }
 
@@ -159,7 +192,7 @@ const initializeGame = (isContinue = false) => {
 
     if (isPuzzleSolved(newTiles)) {
       completeLevel();
-    } else if (moveCount + 1 >= level.moves) {
+    } else if (moveCount + 1 >= safeLevel.moves) {
       setShowGameOver(true);
       setGameStarted(false);
     }
@@ -176,8 +209,8 @@ const initializeGame = (isContinue = false) => {
       useNativeDriver: true,
     }).start();
 
-    await saveProgress(level.id, true);
-    await saveLevelStats(level.id, {
+    await saveProgress(safeLevel.id, true);
+    await saveLevelStats(safeLevel.id, {
       moves: moveCount,
       time: timer,
       completed: true,
@@ -195,7 +228,7 @@ const initializeGame = (isContinue = false) => {
       try {
         await LeaderboardService.updateUserScore(
           user.uid,
-          level.id,
+          safeLevel.id,
           score,
           timer,
           moveCount
@@ -206,13 +239,13 @@ const initializeGame = (isContinue = false) => {
     }
 
     // Clear saved game state when completed
-    await clearCurrentGameState(level.id);
+    await clearCurrentGameState(safeLevel.id);
 
      await playVictorySound();
      
      // Stop level music when flip card appears
-     if (level.sound) {
-       stopLevelSound(level.sound).catch(error => {
+     if (safeLevel.sound) {
+       stopLevelSound(safeLevel.sound).catch(error => {
          console.log('Error stopping level sound:', error);
        });
      }
@@ -227,7 +260,7 @@ const initializeGame = (isContinue = false) => {
   const handleRestartLevel = () => {
     setRestartCount(restartCount + 1);
     // Clear saved state when restarting
-    clearCurrentGameState(level.id);
+    clearCurrentGameState(safeLevel.id);
     initializeGame(false); // Start fresh game
   };
 
@@ -248,11 +281,11 @@ const initializeGame = (isContinue = false) => {
     }
     
     // Stop sound if muting, play if unmuting
-    if (level.sound) {
+    if (safeLevel.sound) {
       if (newSoundState) {
-        playLevelSound(level.sound);
+        playLevelSound(safeLevel.sound);
       } else {
-        stopLevelSound(level.sound);
+        stopLevelSound(safeLevel.sound);
       }
     }
   };
@@ -273,6 +306,37 @@ const initializeGame = (isContinue = false) => {
         setShowHints(false);
       }, 3000);
     }
+  };
+
+  const toggleHints = () => {
+    setShowHints(!showHints);
+  };
+
+  const handleStoryClose = () => {
+    setShowStory(false);
+  };
+
+  const handleStoryStart = () => {
+    setShowStory(false);
+    setGameStarted(true);
+  };
+
+  const handleContinueFromFlipCard = () => {
+    setShowFlipCard(false);
+  };
+
+  const handleQuizClose = () => {
+    setShowQuiz(false);
+    setUserAnswer('');
+  };
+
+  const handleQuizAnswer = (answer) => {
+    setUserAnswer(answer);
+  };
+
+  const handleQuizComplete = () => {
+    setShowQuiz(false);
+    setUserAnswer('');
   };
 
   const handleContinueFromStory = () => {
@@ -304,7 +368,7 @@ const initializeGame = (isContinue = false) => {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
+<SafeAreaView style={styles.safeArea}>
          {/* Header */}
          <View style={styles.header}>
            <TouchableOpacity
@@ -314,8 +378,8 @@ const initializeGame = (isContinue = false) => {
              <Text style={styles.backButton}>← Back</Text>
            </TouchableOpacity>
           <View>
-            <Text style={styles.levelTitle}>{level.title}</Text>
-            <Text style={styles.levelRef}>{level.bibleRef}</Text>
+            <Text style={styles.levelTitle}>{safeLevel.title}</Text>
+            <Text style={styles.levelRef}>{safeLevel.bibleRef}</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity
@@ -332,77 +396,103 @@ const initializeGame = (isContinue = false) => {
           </View>
         </View>
 
-        {/* Victory Badge */}
-        <Animated.View style={[styles.victoryBadge, { transform: [{ scale: victoryScale }] }]}>
-          <Text style={styles.victoryEmoji}>✨</Text>
-          <Text style={styles.victoryText}>SOLVED!</Text>
-          <Text style={styles.victoryEmoji}>✨</Text>
-        </Animated.View>
+        {/* Scrollable Content */}
+        <ScrollView 
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Bible Verse */}
+          <View style={styles.verseContainer}>
+            <Text style={styles.verseText}>{safeLevel.verse}</Text>
+          </View>
 
-        {/* Puzzle Grid */}
-        {gameStarted && tiles.length > 0 && (
-          <PuzzleGrid
-            tiles={tiles}
-            gridSize={level.gridSize}
-            imageUrl={level.image}
-            onTilePress={handleTilePress}
-            moveCount={moveCount}
-            maxMoves={level.moves}
-            showHints={showHints}
-            restartCount={restartCount}
-          />
-        )}
+          {/* Victory Badge */}
+          <Animated.View style={[styles.victoryBadge, { transform: [{ scale: victoryScale }] }]}>
+            <Text style={styles.victoryEmoji}>✨</Text>
+            <Text style={styles.victoryText}>SOLVED!</Text>
+            <Text style={styles.victoryEmoji}>✨</Text>
+          </Animated.View>
 
-        {/* Control Buttons */}
-        <View style={styles.controlButtons}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleRestartLevel}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.buttonText}>🔄 Restart</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.hintButtonStyle]}
-            onPress={handleHint}
-            disabled={hintsRemaining === 0}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.hintButtonText, hintsRemaining === 0 && styles.disabledButtonText]}>
-              💡 Hint ({hintsRemaining})
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+          {/* Puzzle Grid */}
+          {gameStarted && tiles.length > 0 && (
+            <PuzzleGrid
+              tiles={tiles}
+              gridSize={safeLevel.gridSize}
+              imageUrl={safeLevel.image}
+              onTilePress={handleTilePress}
+              moveCount={moveCount}
+              maxMoves={safeLevel.moves}
+              showHints={showHints}
+              restartCount={restartCount}
+            />
+          )}
 
-      {/* Story Modal */}
+          {/* Control Buttons */}
+          <View style={styles.controlButtons}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleRestartLevel}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.buttonText}>🔄 Restart</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.hintButtonStyle]}
+              onPress={handleHint}
+              disabled={hintsRemaining === 0}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.hintButtonText, hintsRemaining === 0 && styles.disabledButtonText]}>
+                💡 Hint ({hintsRemaining})
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.hintButtonStyle]}
+              onPress={toggleHints}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.hintButtonText}>
+                {showHints ? '🙈 Hide' : '👁️ Show'} Numbers
+              </Text>
+            </TouchableOpacity>
+          </View>
+</ScrollView>
+
+      {/* Modals - Outside ScrollView */}
       <StoryModal
         visible={showStory}
-        levelData={level}
-        onClose={() => setShowStory(false)}
-        onContinue={handleContinueFromStory}
+        onClose={handleStoryClose}
+        onStart={handleStoryStart}
+        level={safeLevel}
       />
 
-      {/* Flip Card Modal */}
       <PuzzleFlipCard
         visible={showFlipCard}
-        levelData={level}
-        onClose={handleCloseFlipCard}
-        moveCount={moveCount}
-        timeTaken={timer}
+        level={safeLevel}
+        onContinue={handleContinueFromFlipCard}
       />
 
-      {/* Game Over Modal */}
+      <QuizModal
+        visible={showQuiz}
+        question={currentQuestion}
+        userAnswer={userAnswer}
+        onAnswer={handleQuizAnswer}
+        onClose={handleQuizClose}
+        onComplete={handleQuizComplete}
+      />
+
       <GameOverModal
         visible={showGameOver}
         onClose={() => setShowGameOver(false)}
         onRetry={handleRetryFromQuiz}
         onBackToLevels={handleBackToLevels}
-        levelTitle={level.title}
+        levelTitle={safeLevel.title}
         restartCount={restartCount}
-        maxMoves={level.moves}
+        maxMoves={safeLevel.moves}
         timeTaken={timer}
       />
+      </SafeAreaView>
     </LinearGradient>
   );
 };
@@ -414,6 +504,13 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
@@ -470,6 +567,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.darker,
   },
+  verseContainer: {
+    backgroundColor: COLORS.white + '15',
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.gold + '30',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  verseText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: COLORS.light,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   victoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -496,6 +616,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
+    marginBottom: 20,
   },
   button: {
     flex: 1,

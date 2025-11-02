@@ -14,15 +14,16 @@ import { COLORS } from '../constants/colors';
 const { width } = Dimensions.get('window');
 
 export const PuzzleGrid = ({
-  tiles,
   gridSize,
-  imageUrl,
+  tiles,
   onTilePress,
   moveCount,
   maxMoves,
   showHints,
   restartCount,
+  imageUrl,
 }) => {
+
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const gridWidth = width * 0.9;
@@ -70,8 +71,8 @@ export const PuzzleGrid = ({
       <View style={styles.previewContainer}>
         <Text style={styles.previewLabel}>Preview</Text>
         <TouchableOpacity onPress={() => setShowPreviewModal(true)} activeOpacity={0.8}>
-<Image
-          source={typeof imageUrl === 'string' ? { uri: imageUrl } : imageUrl}
+        <Image
+          source={imageUrl}
           style={styles.previewImage}
         />
         </TouchableOpacity>
@@ -116,7 +117,7 @@ export const PuzzleGrid = ({
           >
             <View style={styles.modalContent}>
 <Image
-            source={typeof imageUrl === 'string' ? { uri: imageUrl } : imageUrl}
+            source={imageUrl}
             style={styles.fullscreenImage}
             resizeMode="contain"
           />
@@ -214,7 +215,7 @@ return (
           ]}
         >
           <Image
-            source={typeof imageUrl === 'string' ? { uri: imageUrl } : imageUrl}
+            source={imageUrl}
             style={[
               styles.tileImage,
               {
@@ -225,6 +226,7 @@ return (
                 top: -(Math.floor(tile.correctPosition / gridSize) * tileSize),
               },
             ]}
+
           />
         </View>
         

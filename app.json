@@ -1,7 +1,7 @@
 {
   "expo": {
-"name": "BiblePuzzleQuest",
-  "slug": "bible-puzzle-quest",
+    "name": "BiblePuzzleQuest",
+    "slug": "bible-puzzle-quest",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
@@ -28,6 +28,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bible-puzzle-quest"
+      }
     }
   }
 }

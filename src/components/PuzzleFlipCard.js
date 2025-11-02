@@ -115,7 +115,7 @@ export const PuzzleFlipCard = ({ visible, levelData, onClose, moveCount, timeTak
                 </View>
                 <View style={styles.imageContainer}>
                   <Image
-                    source={typeof levelData.image === 'string' ? { uri: levelData.image } : levelData.image}
+                    source={levelData.image}
                     style={styles.puzzleImage}
                     resizeMode="cover"
                   />

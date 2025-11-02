@@ -39,7 +39,7 @@ export const LevelCard = ({
         activeOpacity={0.8}
       >
         <ImageBackground
-          source={typeof level.image === 'string' ? { uri: level.image } : level.image}
+          source={level.image}
           style={styles.card}
           imageStyle={styles.imageStyle}
         >

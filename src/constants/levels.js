@@ -6,6 +6,9 @@ import danielLionsImg from '../assets/images/daniel-lions.png';
 import jesusStormImg from '../assets/images/jesus-storm.png';
 import resurrectionImg from '../assets/images/resurrection.png';
 
+// Fallback remote URLs for tunnel mode
+const REMOTE_IMAGE_BASE = 'https://expo.dev/assets/assets/?platform=ios&hash='; // This would need actual asset hashes
+
 // Local sound paths for React Native
 import creationSound from '../assets/sounds/creation.mp3';
 
@@ -33,6 +36,7 @@ export const LEVELS = [
     id: 1,
     title: 'Creation',
     bibleRef: 'Genesis 1',
+    verse: '"In the beginning God created the heavens and the earth." - Genesis 1:1',
     image: images.creation,
     sound: sounds.creation,
     story: `In the beginning, God created the heavens and the earth. On the first day, God said "Let there be light," and light appeared, separating day from night. Over the next five days, God created the sky, the land, the sea, plants, animals, and finally, mankind in His image. On the seventh day, God rested, blessing this day and calling it holy. Creation was complete, and it was very good.`,
@@ -43,6 +47,7 @@ export const LEVELS = [
     id: 2,
     title: "Noah's Ark",
     bibleRef: 'Genesis 6-9',
+    verse: '"The Lord is righteous in all his ways and faithful in all he does." - Psalm 145:17',
     image: images['noah-ark'],
     story: `God saw that the earth was filled with wickedness and decided to send a great flood. He commanded Noah, a righteous man, to build an ark and bring two of every kind of animal into it, along with his family. For 40 days and 40 nights, rain fell upon the earth. When the waters receded, the ark rested on the mountains of Ararat. God made a covenant with Noah, placing a rainbow in the sky as a sign that He would never destroy the earth by flood again.`,
     moves: 50,
@@ -52,6 +57,7 @@ export const LEVELS = [
     id: 3,
     title: 'David and Goliath',
     bibleRef: '1 Samuel 17',
+    verse: '"The Lord who delivered me from the paw of the lion and the paw of the bear will deliver me from the hand of this Philistine." - 1 Samuel 17:37',
     image: images['david-goliath'],
     story: `The giant Goliath challenged the Israelites to send a champion to fight him. All the soldiers were afraid, but young David, a shepherd boy, accepted the challenge. Armed only with his sling and five smooth stones, David faced the mighty Goliath. With faith in God, David hurled a stone that struck Goliath in the forehead, and the giant fell. David's courage and trust in the Lord showed that size and strength are nothing compared to faith in God.`,
     moves: 50,
@@ -61,6 +67,7 @@ export const LEVELS = [
     id: 4,
     title: "Daniel's Faith",
     bibleRef: 'Daniel 6',
+    verse: '"My God sent his angel, and he shut the mouths of the lions." - Daniel 6:22',
     image: images['daniel-lions'],
     story: `King Darius made a law that no one could pray to any god except him. Daniel, a faithful servant of God, continued to pray to the Lord three times daily. He was thrown into a den of lions as punishment. But God sent an angel to shut the lions' mouths, and they did not harm Daniel. The next morning, Daniel emerged unharmed. King Darius saw the power of God and issued a new decree honoring the God of Daniel.`,
     moves: 65,
@@ -70,6 +77,7 @@ export const LEVELS = [
     id: 5,
     title: 'Jesus Calms the Storm',
     bibleRef: 'Mark 4:35-41',
+    verse: '"He got up, rebuked the wind and said to the waves, "Quiet! Be still!" Then the wind died down and it was completely calm." - Mark 4:39',
     image: images['jesus-storm'],
     story: `Jesus and His disciples were crossing the Sea of Galilee when a fierce storm arose, with waves crashing over the boat. The disciples were afraid and woke Jesus, who was sleeping. Jesus rose and rebuked the wind, saying "Peace, be still." Immediately, the storm ceased, and there was great calm. Jesus asked His disciples why they had no faith, and they marveled, saying "What kind of man is this, that even the wind and sea obey Him?"`,
     moves: 70,
@@ -79,6 +87,7 @@ export const LEVELS = [
     id: 6,
     title: 'Resurrection',
     bibleRef: 'Luke 24',
+    verse: '"He is not here; he has risen, just as he said!" - Matthew 28:6',
     image: images.resurrection,
     story: `After Jesus was crucified, His body was placed in a tomb. On the third day, women came to anoint Him with spices, but found the stone rolled away. An angel told them: "He is not here; He has risen!" Jesus appeared to His disciples and many others over 40 days, proving He was alive. His resurrection defeated death and sin, offering all who believe in Him eternal life and hope.`,
     moves: 75,
