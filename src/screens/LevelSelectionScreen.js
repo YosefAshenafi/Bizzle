@@ -132,11 +132,11 @@ const handleSelectLevel = (level) => {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.lockContainer}>
-                  <Text style={styles.lockIcon}>🔒</Text>
-                  <Text style={styles.lockText}>{t('levelCard.locked')}</Text>
-                </View>
-                <View style={styles.content}>
+                <View style={styles.comingSoonContent}>
+                  <View style={styles.lockContainer}>
+                    <Text style={styles.lockIcon}>🔒</Text>
+                    <Text style={styles.lockText}>{t('levelCard.locked')}</Text>
+                  </View>
                   <Text style={styles.levelNumber}>{t('levelCard.level')} 7+</Text>
                   <Text style={styles.title}>{t('levelSelection.moreStoriesComingSoon')}</Text>
                   <Text style={styles.ref}>{t('levelSelection.newAdventuresPrepared')}</Text>
@@ -314,12 +314,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingBottom: 16,
   },
+  comingSoonContent: {
+    paddingHorizontal: 16,
+    position: 'relative',
+  },
   lockContainer: {
     position: 'absolute',
-    top: '50%',
+    top: -80,
     left: '50%',
     marginLeft: -40,
-    marginTop: -40,
     width: 80,
     height: 80,
     justifyContent: 'center',

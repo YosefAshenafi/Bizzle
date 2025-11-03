@@ -14,11 +14,11 @@ const { width, height } = Dimensions.get('window');
 
 export const CustomSplashScreen = ({ onAnimationComplete }) => {
   const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.8);
+  const scaleAnim = new Animated.Value(0.3);
   const titleY = new Animated.Value(50);
 
   useEffect(() => {
-    // Entrance animations
+    // Entrance animations - zoom in from small
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -36,9 +36,23 @@ export const CustomSplashScreen = ({ onAnimationComplete }) => {
         duration: 600,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // After zoom in, do a breathing/pulse effect
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
 
-    // Hold for 2 seconds, then fade out
+    // Hold for 2.5 seconds, then zoom out and fade
     setTimeout(() => {
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -47,7 +61,7 @@ export const CustomSplashScreen = ({ onAnimationComplete }) => {
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
-          toValue: 1.2,
+          toValue: 1.5,
           duration: 500,
           useNativeDriver: true,
         }),
@@ -134,8 +148,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   appIcon: {
-    width: width * 0.8,
-    height: width * 0.8,
+    width: width * 1.2,
+    height: width * 1.2,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
