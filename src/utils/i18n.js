@@ -59,7 +59,7 @@ const translations = {
       try: "Try",
       limit: "Limit",
       remaining: "Remaining",
-      close: "✕ Close",
+      close: "Close",
     },
     // Game Over Modal
     gameOver: {

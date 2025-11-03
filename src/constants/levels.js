@@ -126,12 +126,12 @@ const LEVEL_CONTENT = {
 
 // Level metadata (same for all languages)
 const LEVEL_METADATA = [
-  { id: 1, imageKey: 'samson', soundKey: 'samson', moves: 50, gridSize: 4 },
-  { id: 2, imageKey: 'jesus', soundKey: 'jesus', moves: 60, gridSize: 5 },
-  { id: 3, imageKey: 'the-word', soundKey: 'the-word', moves: 55, gridSize: 4 },
-  { id: 4, imageKey: 'creation', soundKey: 'creation', moves: 50, gridSize: 4 },
-  { id: 5, imageKey: 'all-the-world', soundKey: 'all-the-world', moves: 65, gridSize: 5 },
-  { id: 6, imageKey: 'song-to-jesus', soundKey: 'song-to-jesus', moves: 55, gridSize: 4 },
+  { id: 1, imageKey: 'samson', soundKey: 'samson', moves: 25, gridSize: 4 },  // Reduced from 30
+  { id: 2, imageKey: 'jesus', soundKey: 'jesus', moves: 35, gridSize: 5 },   // Reduced from 40
+  { id: 3, imageKey: 'the-word', soundKey: 'the-word', moves: 30, gridSize: 4 }, // Reduced from 35
+  { id: 4, imageKey: 'creation', soundKey: 'creation', moves: 40, gridSize: 4 },  // Reduced from 50
+  { id: 5, imageKey: 'all-the-world', soundKey: 'all-the-world', moves: 50, gridSize: 5 }, // Reduced from 65
+  { id: 6, imageKey: 'song-to-jesus', soundKey: 'song-to-jesus', moves: 45, gridSize: 4 }, // Reduced from 55
 ];
 
 // Helper function to get levels for a specific language

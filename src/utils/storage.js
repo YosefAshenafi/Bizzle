@@ -4,6 +4,7 @@ const PROGRESS_KEY = '@biblepuzzlequest_progress';
 const GAME_DATA_KEY = '@biblepuzzlequest_gamedata';
 const QUIZ_STATE_KEY = '@biblepuzzlequest_quizstate';
 const BADGES_KEY = '@biblepuzzlequest_badges';
+const ATTEMPTS_KEY = '@biblepuzzlequest_attempts';
 
 export const saveProgress = async (levelId, completed) => {
   try {
@@ -161,6 +162,54 @@ export const clearCurrentGameState = async (levelId) => {
   } catch (error) {
     console.error('Error clearing current game state:', error);
     return false;
+  }
+};
+
+// Save attempt count for a level
+export const saveAttemptCount = async (levelId, attemptCount) => {
+  try {
+    const existing = await getAttemptCounts();
+    const updated = { ...existing, [levelId]: attemptCount };
+    await AsyncStorage.setItem(ATTEMPTS_KEY, JSON.stringify(updated));
+    return true;
+  } catch (error) {
+    console.error('Error saving attempt count:', error);
+    return false;
+  }
+};
+
+// Get attempt counts for all levels
+export const getAttemptCounts = async () => {
+  try {
+    const data = await AsyncStorage.getItem(ATTEMPTS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (error) {
+    console.error('Error getting attempt counts:', error);
+    return {};
+  }
+};
+
+// Get attempt count for a specific level
+export const getAttemptCount = async (levelId) => {
+  try {
+    const attempts = await getAttemptCounts();
+    return attempts[levelId] || 0;
+  } catch (error) {
+    console.error('Error getting attempt count:', error);
+    return 0;
+  }
+};
+
+// Increment attempt count for a level
+export const incrementAttemptCount = async (levelId) => {
+  try {
+    const currentCount = await getAttemptCount(levelId);
+    const newCount = currentCount + 1;
+    await saveAttemptCount(levelId, newCount);
+    return newCount;
+  } catch (error) {
+    console.error('Error incrementing attempt count:', error);
+    return 0;
   }
 };
 

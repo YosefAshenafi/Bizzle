@@ -26,7 +26,7 @@ import {
   isValidMove,
   debugShuffle,
 } from '../utils/puzzleLogic';
-import { saveProgress, saveLevelStats, saveCurrentGameState, loadCurrentGameState, clearCurrentGameState } from '../utils/storage';
+import { saveProgress, saveLevelStats, saveCurrentGameState, loadCurrentGameState, clearCurrentGameState, getAttemptCount, incrementAttemptCount } from '../utils/storage';
 import { playVictorySound, loadLevelSound, playLevelSound, stopLevelSound, stopAllLevelSounds, isSoundEnabled } from '../utils/audio';
 import { useAuth } from '../contexts/AuthContext';
 import { LeaderboardService } from '../services/leaderboardService';
@@ -68,17 +68,20 @@ export const GameScreen = ({ route, navigation }) => {
   const [showStory, setShowStory] = useState(false);
   const [showFlipCard, setShowFlipCard] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [timer, setTimer] = useState(300); // 5 minutes in seconds
+  const [timer, setTimer] = useState(240); // 4 minutes in seconds (reduced from 5)
   const [showGameOver, setShowGameOver] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [restartCount, setRestartCount] = useState(0);
   const [showHints, setShowHints] = useState(false);
-  const [hintsRemaining, setHintsRemaining] = useState(3);
+    const [hintsRemaining, setHintsRemaining] = useState(2); // Reduced from 3
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [totalAttempts, setTotalAttempts] = useState(0);
+  const [timerEnabled, setTimerEnabled] = useState(true);
+  const [dynamicMoveLimit, setDynamicMoveLimit] = useState(safeLevel.moves || 50);
 
   const victoryScale = useRef(new Animated.Value(0)).current;
   const verseGlow = useRef(new Animated.Value(0)).current;
@@ -133,7 +136,7 @@ export const GameScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     let interval;
-    if (gameStarted && !isComplete && timer > 0) {
+    if (gameStarted && !isComplete && timer > 0 && timerEnabled) {
       interval = setInterval(() => {
         setTimer((t) => {
           if (t <= 1) {
@@ -148,7 +151,7 @@ export const GameScreen = ({ route, navigation }) => {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [gameStarted, isComplete, timer]);
+  }, [gameStarted, isComplete, timer, timerEnabled]);
 
   // Auto-save game state when it changes
   useEffect(() => {
@@ -180,53 +183,89 @@ export const GameScreen = ({ route, navigation }) => {
     }
   }, [tiles, moveCount, timer, showHints, hintsRemaining, gameStarted, isComplete]);
 
-const initializeGame = (isContinue = false) => {
+const initializeGame = async (isContinue = false) => {
     if (isContinue) {
       // Try to load saved game state
-      loadCurrentGameState(safeLevel.id).then(savedState => {
-        if (savedState) {
-          // Restore saved state
-          setTiles(savedState.tiles);
-          setMoveCount(savedState.moveCount);
-          setTimer(savedState.timer || 300); // Default to 5 minutes if not saved
-          setGameStarted(true);
-          setIsComplete(false);
-          setShowHints(savedState.showHints || false);
-          setHintsRemaining(savedState.hintsRemaining !== undefined ? savedState.hintsRemaining : 3);
-          
-          // Load and play level sound when continuing game (non-blocking)
-          if (safeLevel.sound) {
-            loadLevelSound(safeLevel.sound).then(() => {
-              playLevelSound(safeLevel.sound).catch(error => {
-                console.log('Sound playback failed on continue, game continues:', error);
-              });
-            }).catch(error => {
-              console.log('Sound loading failed on continue, game continues:', error);
-            });
-          }
-        } else {
-          // No saved state, start fresh
-          startFreshGame();
+      const savedState = await loadCurrentGameState(safeLevel.id);
+      if (savedState) {
+        // Load current attempts for dynamic settings
+        const attempts = await getAttemptCount(safeLevel.id);
+        setTotalAttempts(attempts);
+        
+        // Apply dynamic difficulty rules
+        let newTimerEnabled = true;
+        let newMoveLimit = safeLevel.moves || 50;
+        
+        if (attempts >= 3) {
+          newTimerEnabled = false;
         }
-      }).catch(error => {
-        console.log('Error loading saved state, starting fresh:', error);
+        
+        if (attempts >= 5) {
+          newMoveLimit = 80 + (attempts - 5) * 8;
+        }
+        
+        setTimerEnabled(newTimerEnabled);
+        setDynamicMoveLimit(newMoveLimit);
+        
+        // Restore saved state
+        setTiles(savedState.tiles);
+        setMoveCount(savedState.moveCount);
+        setTimer(savedState.timer || (newTimerEnabled ? 240 : 999999));
+        setGameStarted(true);
+        setIsComplete(false);
+        setShowHints(savedState.showHints || false);
+        setHintsRemaining(savedState.hintsRemaining !== undefined ? savedState.hintsRemaining : 2);
+        
+        // Load and play level sound when continuing game (non-blocking)
+        if (safeLevel.sound) {
+          loadLevelSound(safeLevel.sound).then(() => {
+            playLevelSound(safeLevel.sound).catch(error => {
+              console.log('Sound playback failed on continue, game continues:', error);
+            });
+          }).catch(error => {
+            console.log('Sound loading failed on continue, game continues:', error);
+          });
+        }
+      } else {
+        // No saved state, start fresh
         startFreshGame();
-      });
+      }
     } else {
       // Start fresh game
       startFreshGame();
     }
   };
 
-  const startFreshGame = () => {
-    const newTiles = generatePuzzleTiles(safeLevel.gridSize, restartCount, safeLevel.id);
+  const startFreshGame = async () => {
+    // Load total attempts and increment for this new game
+    const attempts = await incrementAttemptCount(safeLevel.id);
+    setTotalAttempts(attempts);
+    
+    // Apply dynamic difficulty rules
+    let newTimerEnabled = true;
+    let newMoveLimit = safeLevel.moves || 50;
+    
+    // After 3 attempts, disable timer (increased from 2)
+    if (attempts >= 3) {
+      newTimerEnabled = false;
+    }
+    
+    // After 5 attempts, increase move limit to 80+ (reduced from 6, lower base)
+    if (attempts >= 5) {
+      newMoveLimit = 80 + (attempts - 5) * 8; // 80, 88, 96, etc.
+    }
+    
+    setTimerEnabled(newTimerEnabled);
+    setDynamicMoveLimit(newMoveLimit);
+    
+    const newTiles = generatePuzzleTiles(safeLevel.gridSize, restartCount, safeLevel.id, attempts);
     setTiles(newTiles);
     setMoveCount(0);
-    setTimer(300); // Reset to 5 minutes
+    setTimer(newTimerEnabled ? 240 : 999999); // Disable timer by setting very high value (reduced from 300)
     setGameStarted(true); // Set to true so puzzle shows
     setIsComplete(false);
     setShowHints(false);
-    setHintsRemaining(3);
+    setHintsRemaining(2);
     
     // Load and play level sound when game starts (non-blocking)
     if (safeLevel.sound) {
@@ -252,7 +291,7 @@ const initializeGame = (isContinue = false) => {
 
     if (isPuzzleSolved(newTiles)) {
       completeLevel(newMoveCount);
-    } else if (newMoveCount >= safeLevel.moves) {
+    } else if (newMoveCount >= dynamicMoveLimit) {
       setIsTimeUp(false);
       setShowGameOver(true);
       setGameStarted(false);
@@ -371,10 +410,10 @@ setTimeout(() => {
       setShowHints(true);
       setHintsRemaining(hintsRemaining - 1);
       
-      // Hide hints after 3 seconds
+      // Hide hints after 2 seconds (reduced from 3)
       setTimeout(() => {
         setShowHints(false);
-      }, 3000);
+      }, 2000);
     }
   };
 
@@ -461,11 +500,13 @@ setTimeout(() => {
             >
               <Text style={styles.soundIcon}>{soundEnabled ? '🔊' : '🔇'}</Text>
             </TouchableOpacity>
-            <View style={[styles.timerBox, timer <= 60 && styles.timerBoxWarning]}>
-               <Text style={[styles.timerText, timer <= 60 && styles.timerTextWarning]}>
-                 {formatTime(timer)}
-               </Text>
-             </View>
+{timerEnabled && (
+              <View style={[styles.timerBox, timer <= 60 && styles.timerBoxWarning]}>
+                <Text style={[styles.timerText, timer <= 60 && styles.timerTextWarning]}>
+                  {formatTime(timer)}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -555,7 +596,7 @@ setTimeout(() => {
               imageUrl={safeLevel.image}
               onTilePress={handleTilePress}
               moveCount={moveCount}
-              maxMoves={safeLevel.moves}
+              maxMoves={dynamicMoveLimit}
               showHints={showHints}
               restartCount={restartCount}
             />
@@ -615,8 +656,8 @@ setTimeout(() => {
         onBackToLevels={handleBackToLevels}
         levelTitle={safeLevel.title}
         restartCount={restartCount}
-        maxMoves={safeLevel.moves}
-        timeTaken={300 - timer} // Show elapsed time
+        maxMoves={dynamicMoveLimit}
+        timeTaken={240 - timer} // Show elapsed time
         isTimeUp={isTimeUp}
       />
       </SafeAreaView>
