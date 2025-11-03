@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Animated,
   Dimensions,
   RefreshControl,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
@@ -35,11 +35,16 @@ export const HomeScreen = ({ navigation }) => {
   const [currentMoves, setCurrentMoves] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const titleY = new Animated.Value(0);
-  const subtitle1Op = new Animated.Value(1);
-  const subtitle2Op = new Animated.Value(1);
-  const button1Scale = new Animated.Value(1);
-  const button2Scale = new Animated.Value(1);
+  const titleY = useRef(new Animated.Value(0)).current;
+  const titleScale = useRef(new Animated.Value(1)).current;
+  const titleRotate = useRef(new Animated.Value(0)).current;
+  const subtitle1Op = useRef(new Animated.Value(1)).current;
+  const subtitle2Op = useRef(new Animated.Value(1)).current;
+  const button1Scale = useRef(new Animated.Value(1)).current;
+  const button2Scale = useRef(new Animated.Value(1)).current;
+  const settingsScale = useRef(new Animated.Value(1)).current;
+  const settingsRotate = useRef(new Animated.Value(0)).current;
+  const primaryButtonPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     setVerse(getRandomVerse(currentLanguage));
@@ -47,10 +52,101 @@ export const HomeScreen = ({ navigation }) => {
 
     // Set initial values immediately
     titleY.setValue(0);
+    titleScale.setValue(1);
+    titleRotate.setValue(0);
     subtitle1Op.setValue(1);
     subtitle2Op.setValue(1);
     button1Scale.setValue(1);
     button2Scale.setValue(1);
+    settingsScale.setValue(1);
+    settingsRotate.setValue(0);
+    primaryButtonPulse.setValue(1);
+
+    // Smooth wave animation for title (slow floating effect)
+    Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(titleY, {
+            toValue: -15,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(titleScale, {
+            toValue: 1.05,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(titleRotate, {
+            toValue: 0.5,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(titleY, {
+            toValue: 0,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(titleScale, {
+            toValue: 1,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(titleRotate, {
+            toValue: 0,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    ).start();
+
+    // Pulsing animation for settings button
+    Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(settingsScale, {
+            toValue: 1.1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(settingsRotate, {
+            toValue: 1,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(settingsScale, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(settingsRotate, {
+            toValue: 0,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    ).start();
+
+    // Smooth pulse animation for primary button (Continue/Start Quest)
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(primaryButtonPulse, {
+          toValue: 1.03,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(primaryButtonPulse, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
   // Refresh data when screen comes into focus
@@ -194,15 +290,38 @@ const loadProgress = async () => {
              />
            }
          >
-           {/* Settings Button - Positioned absolutely */}
-           <TouchableOpacity
-             style={styles.settingsButtonTop}
-             onPress={() => navigation.navigate('Settings')}
-             activeOpacity={0.7}
-             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+           {/* Settings Button - Positioned absolutely with gold theme and gamification */}
+           <Animated.View
+             style={[
+               styles.settingsButtonTop,
+               {
+                 transform: [
+                   { scale: settingsScale },
+                   {
+                     rotate: settingsRotate.interpolate({
+                       inputRange: [0, 1],
+                       outputRange: ['0deg', '180deg'],
+                     }),
+                   },
+                 ],
+               },
+             ]}
            >
-             <Text style={styles.settingsIcon}>⚙️</Text>
-           </TouchableOpacity>
+             <TouchableOpacity
+               onPress={() => navigation.navigate('Settings')}
+               activeOpacity={0.8}
+               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+             >
+               <LinearGradient
+                 colors={[COLORS.gold, '#D97706']}
+                 style={styles.settingsGradient}
+                 start={{ x: 0, y: 0 }}
+                 end={{ x: 1, y: 1 }}
+               >
+                 <Text style={styles.settingsIcon}>⚙️</Text>
+               </LinearGradient>
+             </TouchableOpacity>
+           </Animated.View>
 
            {/* Leaderboard Button */}
            {/* <TouchableOpacity
@@ -214,8 +333,22 @@ const loadProgress = async () => {
              <Text style={styles.leaderboardIcon}>🏆</Text>
            </TouchableOpacity> */}
 
-          {/* Title with enhanced styling */}
-          <Animated.View style={[styles.titleContainer, { transform: [{ translateY: titleY }] }]}>
+          {/* Title with enhanced styling and smooth wave animation */}
+          <Animated.View style={[
+            styles.titleContainer,
+            {
+              transform: [
+                { translateY: titleY },
+                { scale: titleScale },
+                {
+                  rotate: titleRotate.interpolate({
+                    inputRange: [0, 0.5],
+                    outputRange: ['0deg', '3deg'],
+                  }),
+                },
+              ],
+            },
+          ]}>
             <Image
               source={require('../assets/adaptive-icon.png')}
               style={styles.appIcon}
@@ -315,7 +448,7 @@ const loadProgress = async () => {
           </Animated.View>
 
           {/* Enhanced Buttons */}
-          <Animated.View style={[styles.buttonContainer, { transform: [{ scale: button1Scale }] }]}>
+          <Animated.View style={[styles.buttonContainer, { transform: [{ scale: primaryButtonPulse }] }]}>
             <TouchableOpacity
               style={styles.primaryButton}
               onPress={handleContinueQuest}
@@ -427,18 +560,33 @@ const styles = StyleSheet.create({
   titleContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
     flex: 1,
+    marginBottom: -40,
   },
   settingsButtonTop: {
     position: 'absolute',
     top: 20,
     right: 20,
-    elevation: 4,
     zIndex: 10,
+    borderRadius: 50,
+    overflow: 'hidden',
+    shadowColor: COLORS.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  settingsGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white + '30',
   },
   settingsIcon: {
-    fontSize: 20,
+    fontSize: 32,
   },
   leaderboardButtonTop: {
     position: 'absolute',

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
@@ -70,27 +71,20 @@ export const CustomSplashScreen = ({ onAnimationComplete }) => {
         <View style={[styles.decorCircle, styles.circle3]} />
       </View>
 
-      <Animated.View 
+      <Animated.View
         style={[
           styles.content,
-          { 
+          {
             opacity: fadeAnim,
             transform: [{ scale: scaleAnim }, { translateY: titleY }]
           }
         ]}
       >
-        {/* Puzzle Icon */}
-        <Text style={styles.puzzleIcon}>🧩</Text>
-        
-        {/* Bizzle Title */}
-        <Text style={styles.title}>Bizzle</Text>
-        <Text style={styles.subtitle}>Bible Puzzle Quest</Text>
-        
-        {/* Underline */}
-        <View style={styles.titleUnderline} />
-        
-        {/* Tagline */}
-        <Text style={styles.tagline}>✨ Unlock Sacred Stories ✨</Text>
+        <Image
+          source={require('../assets/adaptive-icon.png')}
+          style={styles.appIcon}
+          resizeMode="contain"
+        />
       </Animated.View>
     </LinearGradient>
   );
@@ -139,43 +133,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  puzzleIcon: {
-    fontSize: 60,
-    fontWeight: '700',
-    color: COLORS.white,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 64,
-    fontWeight: '800',
-    color: COLORS.gold,
-    letterSpacing: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-    marginBottom: 16,
-  },
-  titleUnderline: {
-    width: 120,
-    height: 4,
-    backgroundColor: COLORS.gold,
-    borderRadius: 2,
-    marginBottom: 24,
-  },
-  tagline: {
-    fontSize: 18,
-    color: COLORS.light,
-    fontStyle: 'italic',
-    letterSpacing: 2,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 24,
-    color: COLORS.white,
-    fontWeight: '600',
-    marginBottom: 16,
-    letterSpacing: 1,
+  appIcon: {
+    width: width * 0.5,
+    height: width * 0.5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
 });

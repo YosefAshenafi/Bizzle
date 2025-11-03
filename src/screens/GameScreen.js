@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   Animated,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, GRADIENTS } from '../constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -80,15 +80,49 @@ export const GameScreen = ({ route, navigation }) => {
   const [userAnswer, setUserAnswer] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const victoryScale = new Animated.Value(0);
+  const victoryScale = useRef(new Animated.Value(0)).current;
+  const verseGlow = useRef(new Animated.Value(0)).current;
+  const verseIconRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setRestartCount(0);
     initializeGame(isContinue);
-    
+
     // Load sound setting
     isSoundEnabled().then(setSoundEnabled);
-    
+
+    // Pulsing glow animation for verse
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(verseGlow, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(verseGlow, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+
+    // Gentle rotation for decorative icons
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(verseIconRotate, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(verseIconRotate, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
     return () => {
       // Stop all level sounds when leaving the screen to ensure no audio plays outside puzzle
       stopAllLevelSounds().catch(error => {
@@ -441,10 +475,77 @@ setTimeout(() => {
           contentContainerStyle={styles.scrollContentContainer}
           showsVerticalScrollIndicator={false}
         >
-          {/* Bible Verse */}
-          <View style={styles.verseContainer}>
-            <Text style={styles.verseText}>{safeLevel.verse}</Text>
-          </View>
+          {/* Bible Verse - Gamified with golden theme and animated glow */}
+          <Animated.View
+            style={[
+              styles.verseContainer,
+              {
+                shadowOpacity: verseGlow.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.4, 0.9],
+                }),
+                borderColor: verseGlow.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [COLORS.gold + 'CC', COLORS.gold],
+                }),
+              },
+            ]}
+          >
+            {/* Top decorative corners */}
+            <View style={styles.verseDecorTop}>
+              <Animated.Text
+                style={[
+                  styles.verseDecorIcon,
+                  {
+                    transform: [
+                      {
+                        rotate: verseIconRotate.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '20deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                ✨
+              </Animated.Text>
+              <View style={styles.verseDecorLine} />
+              <Text style={styles.verseDecorIcon}>📖</Text>
+              <View style={styles.verseDecorLine} />
+              <Animated.Text
+                style={[
+                  styles.verseDecorIcon,
+                  {
+                    transform: [
+                      {
+                        rotate: verseIconRotate.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '-20deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                ✨
+              </Animated.Text>
+            </View>
+
+            {/* Verse text with icon */}
+            <View style={styles.verseContent}>
+              <Text style={styles.verseQuoteLeft}>"</Text>
+              <Text style={styles.verseText}>{safeLevel.verse}</Text>
+              <Text style={styles.verseQuoteRight}>"</Text>
+            </View>
+
+            {/* Bottom decorative corners */}
+            <View style={styles.verseDecorBottom}>
+              <View style={styles.verseDecorDiamond} />
+              <View style={styles.verseDecorDiamond} />
+              <View style={styles.verseDecorDiamond} />
+            </View>
+          </Animated.View>
 
           {/* Puzzle Grid */}
           {gameStarted && tiles.length > 0 && (
@@ -601,27 +702,86 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   verseContainer: {
-    backgroundColor: COLORS.white + '15',
+    backgroundColor: COLORS.darker,
     marginHorizontal: 20,
     marginTop: 16,
     marginBottom: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.gold + '30',
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderColor: COLORS.gold,
+    shadowColor: COLORS.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 8,
+    position: 'relative',
+  },
+  verseDecorTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  verseDecorIcon: {
+    fontSize: 18,
+    color: COLORS.gold,
+  },
+  verseDecorLine: {
+    height: 2,
+    width: 30,
+    backgroundColor: COLORS.gold + '50',
+    marginHorizontal: 8,
+  },
+  verseContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  verseQuoteLeft: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginRight: 4,
+    marginTop: -8,
+    fontFamily: 'serif',
+  },
+  verseQuoteRight: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    marginLeft: 4,
+    alignSelf: 'flex-end',
+    marginBottom: -8,
+    fontFamily: 'serif',
   },
   verseText: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 15,
     fontStyle: 'italic',
-    color: COLORS.light,
+    color: COLORS.white,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  verseDecorBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    gap: 12,
+  },
+  verseDecorDiamond: {
+    width: 8,
+    height: 8,
+    backgroundColor: COLORS.gold,
+    transform: [{ rotate: '45deg' }],
+    shadowColor: COLORS.gold,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
   victoryBadge: {
     flexDirection: 'row',

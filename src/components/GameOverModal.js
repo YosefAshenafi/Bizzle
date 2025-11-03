@@ -207,7 +207,7 @@ export const GameOverModal = ({
                 <View style={styles.content}>
                    {/* Header */}
                    <View style={styles.header}>
-                      <Text style={styles.title}>{isTimeUp ? t('gameOver.timesUp') : t('gameOver.outOfMoves')}</Text>
+                      <Text style={styles.title}>{isTimeUp ? '⏰ ' + t('gameOver.timesUp') : '⏰ ' + t('gameOver.outOfMoves')}</Text>
                       <Text style={styles.subtitle}>{levelTitle}</Text>
                     </View>
 
@@ -221,20 +221,10 @@ export const GameOverModal = ({
                        <Text style={styles.statLabel}>🔄 {t('gameOver.restarts')}</Text>
                        <Text style={styles.statValue}>{restartCount}</Text>
                      </View>
-                     <View style={styles.statBox}>
-                       <Text style={styles.statLabel}>📊 {t('gameOver.status')}</Text>
-                       <Text style={styles.statValue}>❌ {t('gameOver.incomplete')}</Text>
-                     </View>
                    </View>
 
                    {/* Message */}
                    <View style={styles.messageContainer}>
-                      <Text style={styles.messageText}>
-                        {isTimeUp 
-                          ? t('gameOver.timeRanOut')
-                          : t('gameOver.pathChallenging')
-                        }
-                      </Text>
                       <Text style={styles.challengeText}>
                         {t('gameOver.answerToRetry')}
                       </Text>
